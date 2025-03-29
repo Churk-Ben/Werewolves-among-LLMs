@@ -1,0 +1,6 @@
+flask==2.3.3
+flask-socketio==5.3.6
+python-socketio==5.9.0
+python-engineio==4.7.1
+Werkzeug==2.3.7
+bidict==0.22.1
