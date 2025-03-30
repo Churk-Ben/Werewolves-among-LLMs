@@ -4,3 +4,4 @@ python-socketio==5.9.0
 python-engineio==4.7.1
 Werkzeug==2.3.7
 bidict==0.22.1
+openai
