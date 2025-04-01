@@ -1,5 +1,6 @@
 from flask import Flask, render_template
 from flask_socketio import SocketIO, emit
+from game import Game
 
 
 class Server:
@@ -21,12 +22,13 @@ class Server:
         return render_template("index.html")
 
     def connect(self, sid, auth=None):
+        init_state = self.game.state
+        self.fresh_state(init_state)
         self.send_message("System", "欢迎来到狼人杀游戏！", "speech")
-        self.fresh_state()
+        self.send_message("System", self.game.game_rules["content"], "speech")
 
     def handle_order(self, data):
         order = data["content"]
-        self.send_message("System", "...", "thought")
         self.game.parse_order(order)
 
     def send_message(self, player, content, type, room=None):
@@ -37,26 +39,10 @@ class Server:
             broadcast=True,
         )
 
-    def fresh_state(self):
+    def fresh_state(self, state):
         emit(
             "fresh_state",
-            {
-                "phase": "投票结束",
-                "players": [
-                    {
-                        "name": "Alice",
-                        "role": "WEREWOLF",
-                        "alive": True,
-                        "voted": 3,
-                    },
-                    {
-                        "name": "Bob",
-                        "role": "VILLAGER",
-                        "alive": True,
-                        "voted": 0,
-                    },
-                ],
-            },
+            state,
             broadcast=True,
         )
 
@@ -65,34 +51,6 @@ class Server:
 
     def run(self):
         self.socketio.run(self.app, host=self.host, port=self.port)
-
-
-class Game:
-    def __init__(self, server: Server):
-        self.server = server
-
-    def parse_order(self, order):  # 之后会用ai分析指令
-        print(f"Received order: {order}")
-        match True:
-            case _ if "开始" in order:
-                msg = self.game_start()
-            case _ if "结束" in order:
-                msg = self.game_end()
-            case _:
-                msg = self.default()
-        self.server.send_message("System", msg, "speech")
-
-    def game_start(self):
-        print("Game started")
-        return "Game started"
-
-    def game_end(self):
-        print("Game ended")
-        return "Game ended"
-
-    def default(self):
-        print("Invalid order")
-        return "Invalid order"
 
 
 if __name__ == "__main__":

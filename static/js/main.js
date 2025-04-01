@@ -36,7 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         const messageContent = document.createElement("span");
-        messageContent.textContent = message.content;
+        messageContent.innerHTML = message.content;
         messageElement.appendChild(messageContent);
         messagesDiv.appendChild(messageElement);
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
@@ -100,8 +100,8 @@ document.addEventListener("DOMContentLoaded", () => {
             else if (player.role === "SEER") {
                 li.classList.add("seer");
             }
-            else if (player.role === "SWITCH") {
-                li.classList.add("switch");
+            else if (player.role === "WITCH") {
+                li.classList.add("witch");
             }
             else if (player.role === "BODYGUARD") {
                 li.classList.add("bodyguard");

@@ -2,6 +2,7 @@ from config import playerList, CHARACTERS, API_KEY, API_URL
 from openai import OpenAI
 import json
 
+
 client = OpenAI(api_key=API_KEY, base_url=API_URL)
 prompt_start = (
     f"你有六个玩家：{playerList}，他们的角色分别是：{CHARACTERS}。"
@@ -42,16 +43,13 @@ def get_ai_response(prompt):
 
 
 class Manager:
-    @staticmethod
-    def init_players():
+    def __init__(self, game):
+        self.game = game
+
+    def init_players(self):
         players_info = get_ai_response(prompt_start)
         return json.loads(players_info)
 
-    @staticmethod
-    def aware_game_rules():
+    def aware_game_rules(self):
         game_rules = get_ai_response(prompt_rules)
         return json.loads(game_rules)
-
-
-if __name__ == "__main__":
-    print(Manager.aware_game_rules())

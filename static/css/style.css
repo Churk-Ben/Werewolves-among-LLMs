@@ -2,7 +2,7 @@
     --villager-color: #3e3e3e;
     --werewolf-color: #d32f2f;
     --seer-color: #1292cd;
-    --switch-color: #c91ce4;
+    --witch-color: #c91ce4;
     --hunter-color: #ffc107;
 
     --background-color: #f0f2f5;
@@ -12,6 +12,7 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    transition: all .3s ease;
 }
 
 body {
@@ -153,8 +154,8 @@ body {
     color: var(--seer-color)
 }
 
-#players li.switch {
-    color: var(--switch-color)
+#players li.witch {
+    color: var(--witch-color)
 }
 
 #players li.hunter {
