@@ -73,16 +73,47 @@ document.addEventListener("DOMContentLoaded", () => {
     // 更新游戏状态
     socket.on("fresh_state", (state) => {
         // 更新游戏阶段
-        gamePhase.textContent = `当前阶段: ${state.phase}`;
+        gamePhase.textContent = `阶段: ${state.phase}`;
 
         // 更新玩家列表
         playersList.innerHTML = "";
-        state.players.forEach((playerName) => {
+        state.players.forEach((player) => {
             const li = document.createElement("li");
-            li.textContent = playerName;
+
+            // 设置基础文本内容
+            let displayText = player.name;
+
+            // 如果是投票结束阶段且玩家有投票，显示投票结果
+            if (state.phase === "投票结束" && player.voted !== -1) {
+                displayText += ` (被投票数: ${player.voted})`;
+            }
+
+            li.textContent = displayText;
+
+            // 根据角色添加样式
+            if (player.role === "VILLAGER") {
+                li.classList.add("villager");
+            }
+            else if (player.role === "WEREWOLF") {
+                li.classList.add("werewolf");
+            }
+            else if (player.role === "SEER") {
+                li.classList.add("seer");
+            }
+            else if (player.role === "SWITCH") {
+                li.classList.add("switch");
+            }
+            else if (player.role === "BODYGUARD") {
+                li.classList.add("bodyguard");
+            }
+
+            // 根据存活状态添加样式
+            if (!player.alive) {
+                li.classList.add("dead");
+            }
+
             playersList.appendChild(li);
         });
-
     });
 
 });
