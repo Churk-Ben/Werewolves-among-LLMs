@@ -11,7 +11,6 @@ class Server:
         self.app.config["SECRET_KEY"] = "secret"
         self.socketio = SocketIO(self.app)
         self.bind()
-        self.game = Game(self)
 
     def bind(self):
         self.app.route("/")(self.index)
@@ -22,9 +21,11 @@ class Server:
         return render_template("index.html")
 
     def connect(self, sid, auth=None):
+        self.send_message("System", "欢迎来到狼人杀！等待玩家进入游戏...", "speech")
+        self.game = Game(self)
         init_state = self.game.state
         self.fresh_state(init_state)
-        self.send_message("System", "欢迎来到狼人杀游戏！", "speech")
+        self.send_message("System", "下面宣读本场游戏规则", "speech")
         self.send_message("System", self.game.game_rules["content"], "speech")
 
     def handle_order(self, data):
