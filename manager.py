@@ -1,6 +1,7 @@
-from config import playerList, CHARACTERS, API_KEY, API_URL
+from config import playerList, CHARACTERS, API_KEY, API_URL, LOCAL_RULES
 from openai import OpenAI
 import json
+import random
 
 
 client = OpenAI(api_key=API_KEY, base_url=API_URL)
@@ -50,6 +51,23 @@ class Manager:
         players_info = get_ai_response(prompt_start)
         return json.loads(players_info)
 
+    def local_init_players(self):
+        roles = random.sample(CHARACTERS, len(CHARACTERS))
+        players = []
+        for i, name in enumerate(playerList):
+            players.append(
+                {"name": name, "role": roles[i], "p": round(random.random(), 2)}
+            )
+        return {"players": players}
+
     def aware_game_rules(self):
         game_rules = get_ai_response(prompt_rules)
         return json.loads(game_rules)
+
+    def local_aware_game_rules(self):
+        return {"role": "assistant", "content": LOCAL_RULES}
+
+
+if __name__ == "__main__":
+    print(Manager.local_init_players())
+    print(Manager.local_aware_game_rules())
