@@ -5,14 +5,13 @@ class Game:
     def __init__(self, server):
         self.server = server
         self.manager = Manager(self)
-        self.rules = self.manager.aware_game_rules()["content"]
+        self.rules = self.manager.get_game_rules()
         self.state = {
             "phase": "欢迎来到狼人杀！",
             "players": [],
         }
 
     def parse_order(self, order):  # 之后会用ai分析指令
-        print(f"Received order: {order}")
         match True:
             case _ if "0" in order:
                 msg = self.game_start()
@@ -20,6 +19,8 @@ class Game:
                 msg = self.game_end()
             case _ if "2" in order:
                 msg = self.change()
+            case _ if "3" in order:
+                msg = self.test()
             case _ if "5" in order:
                 msg = self.fresh_state()
             case _:
@@ -28,9 +29,12 @@ class Game:
             self.server.send_message("System", msg, "thought")
 
     def game_start(self):
-        self.state["phase"] = "天黑请闭眼。"
         self.state["players"] = self.manager.init_players()["players"]
-        return "Game started"
+        self.server.send_message(
+            "System",
+            "下面宣读本场游戏规则...<br><br>" + self.rules,
+            "speech",
+        )
 
     def game_end(self):
         return "Game ended"
@@ -43,6 +47,23 @@ class Game:
         self.state["players"][2]["alive"] = random.choice([True, False])
         self.state["players"][3]["alive"] = random.choice([True, False])
         return "Change randomly"
+
+    def test(self):
+        from openai import OpenAI
+
+        client = OpenAI(
+            api_key="sk-4e5351b24ef34d75bd2e489f1ff73e4a",
+            base_url="https://api.deepseek.com",
+        )
+        response = client.chat.completions.create(
+            model="deepseek-chat",
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant"},
+                {"role": "user", "content": "Hello"},
+            ],
+            stream=True,
+        )
+        self.server.send_stream("test", response, "speech")
 
     def fresh_state(self):
         self.server.fresh_state()

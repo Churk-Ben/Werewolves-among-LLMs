@@ -20,40 +20,50 @@ class Server:
     def index(self):
         return render_template("index.html")
 
-    def send_message(self, player, content, type, room=None, chunk_size=200):
-        if len(content) <= chunk_size:
-            emit(
-                "message",
-                {"player": player, "content": content, "type": type},
-                room=room,
-                broadcast=True,
-            )
-        else:
-            # Send start signal
-            emit(
-                "message_start",
-                {"player": player, "type": type},
-                room=room,
-                broadcast=True,
-            )
-            
-            # Send content in chunks
-            for i in range(0, len(content), chunk_size):
-                chunk = content[i:i + chunk_size]
+    def send_message(self, player, content, type, room=None):
+        message = {"player": player, "content": content, "type": type, "room": room}
+        emit(
+            "message",
+            message,
+            room=room,
+            broadcast=True,
+        )
+        return message
+
+    def send_stream(self, player, response, type, room=None):
+        """response须为client回复对象"""
+        message = {"player": player, "type": type, "room": room}
+        # Send start signal
+        emit(
+            "message_start",
+            message,
+            room=room,
+            broadcast=True,
+        )
+
+        # Send content in chunks
+        content = ""
+        for chunk in response:
+            if chunk.choices[0].delta.content:
+                chunk_content = chunk.choices[0].delta.content
+                content += chunk_content
+                # 实时打印输出
                 emit(
                     "message_chunk",
                     {"chunk": chunk},
                     room=room,
                     broadcast=True,
                 )
-            
-            # Send end signal
-            emit(
-                "message_end",
-                {},
-                room=room,
-                broadcast=True,
-            )
+
+        # Send end signal
+        emit(
+            "message_end",
+            {},
+            room=room,
+            broadcast=True,
+        )
+        message["content"] = content
+        return message
 
     def fresh_state(self):
         emit(
@@ -66,15 +76,11 @@ class Server:
         self.game = Game(self)
         self.game.game_start()
         self.fresh_state()
-        self.send_message(
-            "System",
-            "下面宣读本场游戏规则...<br><br>" + self.game.rules,
-            "speech",
-        )
 
     def handle_order(self, data):
         order = data["content"]
         self.game.parse_order(order)
+        self.fresh_state()
 
     def run_debug(self):
         self.socketio.run(self.app, debug=True)

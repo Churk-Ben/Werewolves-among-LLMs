@@ -9,8 +9,8 @@ class Manager:
         self.players_state = []
         self.players_object = []
 
-    def aware_game_rules(self):
-        return {"role": "assistant", "content": LOCAL_RULES}
+    def get_game_rules(self):
+        return str(LOCAL_RULES)
 
     def init_players(self):
         random.shuffle(playerList)
@@ -21,7 +21,7 @@ class Manager:
         for i, name in enumerate(playerList):
             p = round(random.random(), 2)
             player = Player(self, name, roles[i], p)
-            player.listen(self.aware_game_rules())
+
             self.players_object.append(player)
             self.players_state.append(
                 {
