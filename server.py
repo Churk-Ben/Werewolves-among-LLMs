@@ -20,34 +20,61 @@ class Server:
     def index(self):
         return render_template("index.html")
 
+    def send_message(self, player, content, type, room=None, chunk_size=200):
+        if len(content) <= chunk_size:
+            emit(
+                "message",
+                {"player": player, "content": content, "type": type},
+                room=room,
+                broadcast=True,
+            )
+        else:
+            # Send start signal
+            emit(
+                "message_start",
+                {"player": player, "type": type},
+                room=room,
+                broadcast=True,
+            )
+            
+            # Send content in chunks
+            for i in range(0, len(content), chunk_size):
+                chunk = content[i:i + chunk_size]
+                emit(
+                    "message_chunk",
+                    {"chunk": chunk},
+                    room=room,
+                    broadcast=True,
+                )
+            
+            # Send end signal
+            emit(
+                "message_end",
+                {},
+                room=room,
+                broadcast=True,
+            )
+
+    def fresh_state(self):
+        emit(
+            "fresh_state",
+            self.game.state,
+            broadcast=True,
+        )
+
     def connect(self, sid, auth=None):
         self.game = Game(self)
-        init_state = self.game.state
-        self.fresh_state(init_state)
+        self.game.game_start()
+        self.fresh_state()
         self.send_message(
             "System",
-            "下面宣读本场游戏规则...<br><br>" + self.game.game_rules["content"],
+            "下面宣读本场游戏规则...<br><br>" + self.game.rules,
             "speech",
         )
 
     def handle_order(self, data):
         order = data["content"]
         self.game.parse_order(order)
-
-    def send_message(self, player, content, type, room=None):
-        emit(
-            "message",
-            {"player": player, "content": content, "type": type},
-            room=room,
-            broadcast=True,
-        )
-
-    def fresh_state(self, state):
-        emit(
-            "fresh_state",
-            state,
-            broadcast=True,
-        )
 
     def run_debug(self):
         self.socketio.run(self.app, debug=True)

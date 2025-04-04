@@ -5,16 +5,11 @@ class Game:
     def __init__(self, server):
         self.server = server
         self.manager = Manager(self)
+        self.rules = self.manager.aware_game_rules()["content"]
         self.state = {
             "phase": "欢迎来到狼人杀！",
             "players": [],
         }
-        self.temp_state = self.manager.local_init_players()
-        for i in self.temp_state["players"]:
-            i["alive"] = True
-            i["voted"] = -1
-            self.state["players"].append(i)
-        self.game_rules = self.manager.local_aware_game_rules()
 
     def parse_order(self, order):  # 之后会用ai分析指令
         print(f"Received order: {order}")
@@ -33,6 +28,8 @@ class Game:
             self.server.send_message("System", msg, "thought")
 
     def game_start(self):
+        self.state["phase"] = "天黑请闭眼。"
+        self.state["players"] = self.manager.init_players()["players"]
         return "Game started"
 
     def game_end(self):
@@ -48,7 +45,7 @@ class Game:
         return "Change randomly"
 
     def fresh_state(self):
-        self.server.fresh_state(self.state)
+        self.server.fresh_state()
 
     def default(self):
         return "Invalid order"

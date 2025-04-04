@@ -24,6 +24,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     // 处理接收到的消息
+    let currentStreamingMessage = null;
+
     socket.on("message", (message) => {
         const messageElement = document.createElement("div");
         messageElement.classList.add("message");
@@ -40,6 +42,37 @@ document.addEventListener("DOMContentLoaded", () => {
         messageElement.appendChild(messageContent);
         messagesDiv.appendChild(messageElement);
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    });
+
+    // 处理流式消息开始
+    socket.on("message_start", (message) => {
+        currentStreamingMessage = document.createElement("div");
+        currentStreamingMessage.classList.add("message");
+        currentStreamingMessage.classList.add(message.type);
+
+        if (message.player) {
+            const playerName = document.createElement("strong");
+            playerName.textContent = message.player + " : ";
+            currentStreamingMessage.appendChild(playerName);
+        }
+
+        const messageContent = document.createElement("span");
+        currentStreamingMessage.appendChild(messageContent);
+        messagesDiv.appendChild(currentStreamingMessage);
+    });
+
+    // 处理流式消息块
+    socket.on("message_chunk", (message) => {
+        if (currentStreamingMessage) {
+            const contentSpan = currentStreamingMessage.querySelector("span");
+            contentSpan.innerHTML += message.chunk;
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+    });
+
+    // 处理流式消息结束
+    socket.on("message_end", () => {
+        currentStreamingMessage = null;
     });
 
     // 发送消息
