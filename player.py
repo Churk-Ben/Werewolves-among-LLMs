@@ -1,45 +1,8 @@
 from config import API_KEY, API_URL, DEFAULT_MODEL
 from openai import OpenAI
 
-client = OpenAI(api_key=API_KEY, base_url=API_URL)
-prompt_start = (
-    f"你有六个玩家：，他们的角色分别是：。"
-    + """
-    你要：
-    - 将角色随机分配给每个玩家。
-    - 给每个玩家随机设定一个初始指数p (p的范围在0.0到1.0之间)
-    EXAMPLE JSON OUTPUT:
-    [
-        { "name": 玩家名1, "role": 角色, "p": 指数 },
-        ...
-    ]
-    """
-)
-prompt_rules = (
-    f"你在一场狼人杀游戏中。本场游戏的角色配置为："
-    + """
-    你要：
-    - 整理狼人杀游戏的规则。
-    - 将规则转化为纯文本格式。
-    - 将"\n"换成"<br>"。
-    EXAMPLE JSON OUTPUT:
-    { "role": "assistant", "content": 游戏规则 }
-    """
-)
-prompt_think = "I am thinking..."
-
-
-# def get_ai_response(prompt, history, model=DEFAULT_MODEL):
-#     response = client.chat.completions.create(
-#         model=model,
-#         messages=history
-#         + [
-#             {"role": "user", "content": prompt},
-#         ],
-#         stream=True,
-#         response_format={"type": "json_object"},
-#     )
-#     return response.choices[0].message.content
+prompt_think = "现在轮到你了。结合场上形势和历史对话，仅阐述你的思考，先不要做出行动。"
+prompt_act = "根据你之前的思考，你现在可以行动，可以用括号展示出你的小动作。"
 
 
 class Player:
@@ -49,49 +12,41 @@ class Player:
         self.name = name
         self.role = role
         self.top_p = p
-        self.history = []
+        self.history = [
+            {
+                "role": "system",
+                "content": f"你是一个狼人杀玩家，你叫{self.name}，身份是{self.role}",
+            },
+        ]
 
     def listen(self, message):
-        """存储他人的public消息和自己的所有(public&private)消息"""
-        if message["type"] == "public" or message["player"] == self.name:
-            self.history.append(message)
+        """存储同房间他人的 speech 消息和自己的所有 ( speech & thought ) 消息"""
+        if message["room"] == self.role or message["room"] == "ALL":
+            if message["type"] == "speech" or message["player"] == self.name:
+                self.history.append(message)
 
-    def think(self, message):
-        """分析场上所有消息并生成思考(private)"""
+    def think(self):
+        """分析场上所有消息并生成思考 ( thought )"""
         response = self.client.chat.completions.create(
             model=DEFAULT_MODEL,
             messages=self.history
             + [
-                {"role": "system", "content": f"你是一个狼人杀玩家，角色是{self.role}"},
-                {"role": "user", "content": message},
+                {"role": "user", "content": prompt_think},
             ],
             stream=True,
             top_p=self.top_p,
         )
+        return response
 
-        # 流式处理思考过程
-        thought = ""
-        for chunk in response:
-            delta = chunk.choices[0].delta
-            if delta and delta.content:
-                thought += delta.content
-                # 流式传输思考过程
-                self.manager.game.server.send_message(
-                    self.name,
-                    {"type": "thought", "content": delta.content},
-                    "player_thought",
-                )
-
-        return thought
-
-    def act(self, thought):
-        """根据思考结果执行行动(发言或投票)"""
-        # 发言行动
-        self.manager.game.server.send_message(
-            self.name, {"type": "speak", "content": thought}, "player_action"
+    def act(self):
+        """根据思考结果执行行动(发言或投票)(speech)"""
+        response = self.client.chat.completions.create(
+            model=DEFAULT_MODEL,
+            messages=self.history
+            + [
+                {"role": "user", "content": prompt_act},
+            ],
+            stream=True,
+            top_p=self.top_p,
         )
-
-        # 简单投票逻辑(示例)
-        if "投票" in thought:
-            vote_target = thought.split("投票给")[1].strip()
-            self.manager.game.state["players"][vote_target]["voted"] = self.name
+        return response

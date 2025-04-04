@@ -20,23 +20,30 @@ class Server:
     def index(self):
         return render_template("index.html")
 
-    def send_message(self, player, content, type, room=None):
-        message = {"player": player, "content": content, "type": type, "room": room}
+    def send_message(self, player, content, type, room="all"):
+        message = {
+            "player": player,
+            "content": content,
+            "type": type,
+            "room": room,
+        }
         emit(
             "message",
             message,
-            room=room,
             broadcast=True,
         )
         return message
 
-    def send_stream(self, player, response, type, room=None):
+    def send_stream(self, player, response, type, room="all"):
         """response须为client回复对象"""
-        message = {"player": player, "type": type, "room": room}
+        message = {
+            "player": player,
+            "type": type,
+            "room": room,
+        }
         emit(
             "message_start",
             message,
-            room=room,
             broadcast=True,
         )
         content = ""
@@ -47,13 +54,11 @@ class Server:
                 emit(
                     "message_chunk",
                     {"chunk": chunk_content},
-                    room=room,
                     broadcast=True,
                 )
         emit(
             "message_end",
             {},
-            room=room,
             broadcast=True,
         )
         message["content"] = content
