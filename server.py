@@ -33,29 +33,23 @@ class Server:
     def send_stream(self, player, response, type, room=None):
         """response须为client回复对象"""
         message = {"player": player, "type": type, "room": room}
-        # Send start signal
         emit(
             "message_start",
             message,
             room=room,
             broadcast=True,
         )
-
-        # Send content in chunks
         content = ""
         for chunk in response:
             if chunk.choices[0].delta.content:
                 chunk_content = chunk.choices[0].delta.content
                 content += chunk_content
-                # 实时打印输出
                 emit(
                     "message_chunk",
-                    {"chunk": chunk},
+                    {"chunk": chunk_content},
                     room=room,
                     broadcast=True,
                 )
-
-        # Send end signal
         emit(
             "message_end",
             {},

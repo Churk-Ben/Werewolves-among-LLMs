@@ -46,6 +46,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 处理流式消息开始
     socket.on("message_start", (message) => {
+        if (!message?.type) return;  // 添加必要字段检查
+        
         currentStreamingMessage = document.createElement("div");
         currentStreamingMessage.classList.add("message");
         currentStreamingMessage.classList.add(message.type);
@@ -59,13 +61,16 @@ document.addEventListener("DOMContentLoaded", () => {
         const messageContent = document.createElement("span");
         currentStreamingMessage.appendChild(messageContent);
         messagesDiv.appendChild(currentStreamingMessage);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
     });
 
     // 处理流式消息块
     socket.on("message_chunk", (message) => {
-        if (currentStreamingMessage) {
-            const contentSpan = currentStreamingMessage.querySelector("span");
-            contentSpan.innerHTML += message.chunk;
+        if (!currentStreamingMessage || !message?.chunk) return;  // 添加检查
+        
+        const contentSpan = currentStreamingMessage.querySelector("span");
+        if (contentSpan) {
+            contentSpan.textContent += message.chunk;  // 使用textContent替代innerHTML
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
         }
     });
@@ -73,6 +78,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 处理流式消息结束
     socket.on("message_end", () => {
         currentStreamingMessage = null;
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
     });
 
     // 发送消息
