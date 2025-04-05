@@ -37,6 +37,24 @@ class Manager:
     def get_players_state(self):
         return {"players": self.players_state}
 
+    def broadcast_to_player(self, room, message):
+        if room == "ALL":
+            for player in self.players_object:
+                player.listen(message)
+        else:
+            for player in self.players_object:
+                if player.role == room:
+                    player.listen(message)
+
+    def let_player_act(self, room, prompt):
+        if room == "ALL":
+            for player in self.players_object:
+                player.act(prompt)
+        else:
+            for player in self.players_object:
+                if player.role == room:
+                    player.act(prompt)
+
 
 if __name__ == "__main__":
     manager = Manager(None)

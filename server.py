@@ -20,7 +20,7 @@ class Server:
     def index(self):
         return render_template("index.html")
 
-    def send_message(self, player, content, type, room="all"):
+    def send_message(self, player, content, type, room="ALL"):
         message = {
             "player": player,
             "content": content,
@@ -34,7 +34,7 @@ class Server:
         )
         return message
 
-    def send_stream(self, player, response, type, room="all"):
+    def send_stream(self, player, response, type, room="ALL"):
         """response须为client回复对象"""
         message = {
             "player": player,
@@ -71,7 +71,7 @@ class Server:
             broadcast=True,
         )
 
-    def connect(self, sid, auth=None):
+    def connect(self):
         self.game = Game(self)
         self.game.game_start()
         self.fresh_state()

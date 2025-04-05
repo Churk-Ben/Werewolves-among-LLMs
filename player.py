@@ -20,33 +20,45 @@ class Player:
         ]
 
     def listen(self, message):
-        """存储同房间他人的 speech 消息和自己的所有 ( speech & thought ) 消息"""
-        if message["room"] == self.role or message["room"] == "ALL":
-            if message["type"] == "speech" or message["player"] == self.name:
-                self.history.append(message)
+        """存储同房间他人和自己的 speech 消息"""
+        self.history.append(
+            {
+                "role": "user",
+                "name": message["player"],
+                "content": message["content"],
+            }
+        )
 
-    def think(self):
+    def think(self, prompt):
         """分析场上所有消息并生成思考 ( thought )"""
         response = self.client.chat.completions.create(
             model=DEFAULT_MODEL,
             messages=self.history
             + [
-                {"role": "user", "content": prompt_think},
+                {
+                    "role": "user",
+                    "name": "Judger",
+                    "content": prompt,
+                },
             ],
             stream=True,
             top_p=self.top_p,
         )
         return response
 
-    def act(self):
+    def act(self, prompt):
         """根据思考结果执行行动(发言或投票)(speech)"""
         response = self.client.chat.completions.create(
             model=DEFAULT_MODEL,
             messages=self.history
             + [
-                {"role": "user", "content": prompt_act},
+                {
+                    "role": "user",
+                    "name": "Judger",
+                    "content": prompt,
+                },
             ],
             stream=True,
             top_p=self.top_p,
         )
-        return response
+        self.manager.game.server.send_stream()
