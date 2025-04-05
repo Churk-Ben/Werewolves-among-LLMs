@@ -73,7 +73,7 @@ class Server:
 
     def connect(self):
         self.game = Game(self)
-        self.game.game_start()
+        self.game.game_init()
         self.fresh_state()
 
     def handle_order(self, data):

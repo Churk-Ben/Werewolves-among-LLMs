@@ -13,7 +13,6 @@ class Manager:
         return str(LOCAL_RULES)
 
     def init_players(self):
-        random.shuffle(playerList)
         random.shuffle(CHARACTERS)
         self.players_state = []
         self.players_object = []

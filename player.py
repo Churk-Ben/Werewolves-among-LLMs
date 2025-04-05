@@ -61,4 +61,6 @@ class Player:
             stream=True,
             top_p=self.top_p,
         )
-        self.manager.game.server.send_stream()
+        self.manager.game.server.send_stream(
+            self.name, response, "speech"
+        )
