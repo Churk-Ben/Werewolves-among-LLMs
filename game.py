@@ -19,10 +19,19 @@ class Game:
         }
 
     def parse_order(self, order):  # 之后会用ai分析指令
-        match True:
-            case _ if "0" in order:
-                self.game_start()
+        # 检查是否是开始游戏指令
+        if "开始游戏" in order or "0" in order:
+            self.game_start()
+            # 游戏开始时已经进入第零夜，不需要再调用night_phase
+            return
 
+        # 检查是否是自动流程指令
+        if "自动" in order or "auto" in order:
+            self.auto_game_flow()
+            return
+
+        # 其他指令处理
+        match True:
             case _ if "1" in order:
                 self.night_phase()
 
@@ -35,7 +44,43 @@ class Game:
             case _:
                 self.server.send_message("系统", "未解析的指令", "thought")
 
+    def auto_game_flow(self):
+        """自动执行游戏流程，从当前阶段开始自动进行到游戏结束"""
+        # 检查游戏是否已经开始
+        if self.state["phase"] == "欢迎来到狼人杀！":
+            self.game_start()
+        
+        # 循环执行游戏流程，直到游戏结束
+        while not ("游戏结束" in self.state["phase"]):
+            current_phase = self.state["phase"]
+            
+            # 根据当前阶段决定下一步
+            if "天亮了" in current_phase or "游戏开始" in current_phase:
+                self.day_phase()
+            elif "白天发言阶段" in current_phase:
+                self.vote_phase()
+            elif "投票阶段" in current_phase or "投票结束" in current_phase:
+                self.night_phase()
+            else:
+                # 如果是夜晚阶段，等待夜晚结束
+                if "夜" in current_phase and "天亮了" not in current_phase:
+                    # 夜晚阶段已经在night_phase中处理完成
+                    # 这里只是为了防止循环卡住
+                    break
+                    
+            # 添加一个短暂延迟，避免过快循环
+            import time
+            time.sleep(1)
+        
+        # 游戏结束提示
+        self.server.send_message(
+            "系统",
+            "游戏已自动执行完毕！",
+            "speech",
+        )
+
     def game_init(self):
+        # 初始化玩家，这会创建新的Player对象，清空AI玩家的记忆
         self.state["players"] = self.manager.init_players()["players"]
         self.rules = self.manager.get_game_rules()
         
@@ -46,7 +91,7 @@ class Game:
                 self.state["werewolves"].append(player["name"])
         
         # 重置游戏状态
-        self.state["current_night"] = 0
+        self.state["current_night"] = 0  # 从第0夜开始
         self.state["killed_player"] = None
         self.state["witch_saved"] = False
         self.state["witch_poisoned"] = False
@@ -55,7 +100,7 @@ class Game:
 
     def game_start(self):
         self.state["phase"] = "游戏开始！"
-        # 初始化游戏，分配角色
+        # 初始化游戏，分配角色（这会创建新的Player对象，清空AI玩家的记忆）
         self.game_init()
         
         # 宣读游戏规则
@@ -82,11 +127,17 @@ class Game:
             for p in self.manager.players_object:
                 if p.name == player["name"]:
                     p.listen(role_info)
+        
+        # 游戏开始后直接进入第零夜
+        self.night_phase()
 
     def night_phase(self):
         """夜晚阶段，包括狼人行动、预言家查验、女巫救人/毒人"""
+        # 游戏开始时是第零夜，之后每次调用night_phase递增
         self.state["current_night"] += 1
-        self.state["phase"] = f"第{self.state['current_night']}夜"
+        night_number = self.state["current_night"]
+        night_display = "零" if night_number == 0 else str(night_number)
+        self.state["phase"] = f"第{night_display}夜"
         
         # 1. 狼人行动
         self.werewolf_act()
@@ -101,7 +152,7 @@ class Game:
         self.state["phase"] = "天亮了"
         # 公布夜晚死亡情况
         if self.state["killed_player"] is not None:
-            death_message = f"昨晚{self.state['killed_player']}被杀死了。"
+            death_message = f"昨夜{self.state['killed_player']}被杀死了。"
             # 更新玩家状态
             for player in self.state["players"]:
                 if player["name"] == self.state["killed_player"]:
@@ -124,7 +175,9 @@ class Game:
         self.state["phase"] = "天黑请闭眼，狼人请睁眼。"
         
         # 发送系统消息给所有玩家
-        night_start_message = "天黑请闭眼，狼人请睁眼。"
+        night_number = self.state['current_night']
+        night_display = "零" if night_number == 0 else str(night_number)
+        night_start_message = f"天黑请闭眼，狼人请睁眼。现在是第{night_display}夜。"
         temp = self.server.send_message(
             "系统",
             night_start_message,
@@ -143,9 +196,9 @@ class Game:
         
         # 先让狼人知道彼此的身份
         if len(self.state["werewolves"]) > 1:
-            werewolf_info = f"你的同伴狼人是: {', '.join(self.state['werewolves'])}"
+            werewolf_info = f"你的同伴狼人是: {', '.join(self.state['werewolves'])}。请与你的同伴协商选择一个击杀目标。"
         else:
-            werewolf_info = "你是唯一的狼人。"
+            werewolf_info = "你是唯一的狼人。请选择一个击杀目标。"
             
         werewolf_info_message = self.server.send_message(
             "系统", 
@@ -165,7 +218,9 @@ class Game:
             if player["role"] != "WEREWOLF" and player["alive"]:
                 alive_non_werewolves.append(player["name"])
                 
-        werewolf_prompt = f"请选择你们要击杀的人，可选目标: {', '.join(alive_non_werewolves)}。请明确指出目标玩家的名字。"
+        night_number = self.state['current_night']
+        night_display = "零" if night_number == 0 else str(night_number)
+        werewolf_prompt = f"现在是第{night_display}夜，请选择你们要击杀的人，可选目标: {', '.join(alive_non_werewolves)}。请明确指出目标玩家的名字，格式为'我选择击杀XXX'。"
         system_message = self.server.send_message(
             "系统", 
             werewolf_prompt, 
@@ -196,7 +251,9 @@ class Game:
         self.state["phase"] = "狼人请闭眼，预言家请睁眼。"
         
         # 发送系统消息给所有玩家
-        seer_phase_message = "狼人请闭眼，预言家请睁眼。"
+        night_number = self.state['current_night']
+        night_display = "零" if night_number == 0 else str(night_number)
+        seer_phase_message = f"狼人请闭眼，预言家请睁眼。现在是第{night_display}夜。"
         temp = self.server.send_message(
             "系统",
             seer_phase_message,
@@ -224,7 +281,9 @@ class Game:
                 checkable_players.append(player["name"])
         
         # 让预言家选择查验目标
-        seer_prompt = f"请选择你要查验的人，可选目标: {', '.join(checkable_players)}。请明确指出目标玩家的名字。"
+        night_number = self.state['current_night']
+        night_display = "零" if night_number == 0 else str(night_number)
+        seer_prompt = f"现在是第{night_display}夜，请选择你要查验的人，可选目标: {', '.join(checkable_players)}。请明确指出目标玩家的名字，格式为'我选择查验XXX'。"
         system_message = self.server.send_message(
             "系统", 
             seer_prompt, 
@@ -272,7 +331,9 @@ class Game:
         self.state["phase"] = "预言家请闭眼，女巫请睁眼。"
         
         # 发送系统消息给所有玩家
-        witch_phase_message = "预言家请闭眼，女巫请睁眼。"
+        night_number = self.state['current_night']
+        night_display = "零" if night_number == 0 else str(night_number)
+        witch_phase_message = f"预言家请闭眼，女巫请睁眼。现在是第{night_display}夜。"
         temp = self.server.send_message(
             "系统",
             witch_phase_message,
@@ -302,7 +363,7 @@ class Game:
             
         # 根据女巫的药水状态提供选项
         if not self.state["witch_saved"] and self.state["killed_player"] is not None:
-            death_info += "你有一瓶解药，是否要使用？请回答'救'或'不救'。"
+            death_info += f"你有一瓶解药，是否要使用？请回答'我选择救{self.state['killed_player']}'或'我选择不救'。"
         elif not self.state["witch_poisoned"]:
             # 获取可毒杀的玩家列表
             poisonable_players = []
@@ -310,7 +371,7 @@ class Game:
                 if player["alive"] and player["role"] != "WITCH":
                     poisonable_players.append(player["name"])
             
-            death_info += f"你有一瓶毒药，是否要使用？如果使用，请指明毒杀的目标。可选目标: {', '.join(poisonable_players)}"
+            death_info += f"你有一瓶毒药，是否要使用？如果使用，请指明毒杀的目标，格式为'我选择毒杀XXX'。可选目标: {', '.join(poisonable_players)}"
         else:
             death_info += "你的药水已经用完了，无法行动。"
         
@@ -359,7 +420,9 @@ class Game:
         # 发送系统消息，开始白天发言
         # 显示当前存活玩家情况
         alive_players = [player["name"] for player in self.state["players"] if player["alive"]]
-        day_message = f"现在是白天时间，存活玩家: {', '.join(alive_players)}。请各位玩家依次发言，分析昨晚的情况，找出狼人。"
+        # 天数应该是夜晚数+1，因为第零夜后是第一天
+        day_number = self.state['current_night']
+        day_message = f"现在是第{day_number}天白天时间，存活玩家: {', '.join(alive_players)}。请各位玩家依次发言，分析昨天的情況，找出狼人。"
         temp = self.server.send_message(
             "系统",
             day_message,
@@ -372,9 +435,10 @@ class Game:
         
         # 让所有存活玩家依次发言
         alive_players = [player for player in self.state["players"] if player["alive"]]
-        for player in alive_players:
+        for i, player in enumerate(alive_players):
             # 提示当前玩家发言
-            player_prompt = f"现在轮到{player['name']}发言"
+            day_number = self.state['current_night']
+            player_prompt = f"现在是第{day_number}天，轮到{player['name']}发言，发言顺序{i+1}/{len(alive_players)}"
             speak_message = self.server.send_message(
                 "系统",
                 player_prompt,
@@ -411,7 +475,8 @@ class Game:
         alive_players = [player["name"] for player in self.state["players"] if player["alive"]]
         
         # 发送系统消息，开始投票
-        vote_message = f"现在进入投票环节，存活玩家: {', '.join(alive_players)}。请各位玩家投出你认为是狼人的玩家。得票最多的玩家将被放逐。"
+        day_number = self.state['current_night']
+        vote_message = f"现在是第{day_number}天投票环节，存活玩家: {', '.join(alive_players)}。请各位玩家投出你认为是狼人的玩家。得票最多的玩家将被放逐。"
         temp = self.server.send_message(
             "系统",
             vote_message,
@@ -423,7 +488,8 @@ class Game:
         )
         
         # 让所有存活玩家进行投票
-        vote_prompt = f"请投票选出你认为是狼人的玩家，可选目标: {', '.join(alive_players)}。明确写出玩家名字。"
+        day_number = self.state['current_night']
+        vote_prompt = f"现在是第{day_number}天投票阶段，请投票选出你认为是狼人的玩家，可选目标: {', '.join(alive_players)}。明确写出玩家名字，格式为'我投票给XXX'。"
         self.manager.let_player_act(
             "ALL",
             vote_prompt,
