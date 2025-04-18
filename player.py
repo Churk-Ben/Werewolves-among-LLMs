@@ -30,32 +30,41 @@ class Player:
 
     def act(self, prompt):
         """执行行动(发言或投票)"""
+        # 添加用户提示到历史记录
+        user_message = {
+            "role": "user",
+            "name": "Judger",
+            "content": prompt,
+        }
+        self.history.append(user_message)
+
+        # 创建流式响应
         response = self.client.chat.completions.create(
             model=self.model,
-            messages=self.history
-            + [
-                {
-                    "role": "user",
-                    "name": "Judger",
-                    "content": prompt,
-                },
-            ],
+            messages=self.history,
             stream=True,
             top_p=self.top_p,
         )
+
+        # 处理流式响应
+        full_response = ""
         if self.manager:
-            self.manager.game.server.send_stream(self.name, response, "speech")
-        self.history.append(
-            {
-                "role": "user",
-                "name": "Judger",
-                "content": prompt,
-            },
-            {
-                "role": "assistant",
-                "content": response["choices"][0]["text"],
-            },
-        )
+            # 发送流式响应到服务器
+            for chunk in response:
+                if chunk.choices[0].delta.content:
+                    full_response += chunk.choices[0].delta.content
+                    self.manager.game.server.send_stream(self.name, chunk.choices[0].delta.content, "speech")
+        else:
+            # 本地测试模式
+            for chunk in response:
+                if chunk.choices[0].delta.content:
+                    full_response += chunk.choices[0].delta.content
+
+        # 添加AI响应到历史记录
+        self.history.append({
+            "role": "assistant",
+            "content": full_response,
+        })
 
 
 if __name__ == "__main__":
