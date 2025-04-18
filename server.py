@@ -1,10 +1,11 @@
 from flask import Flask, render_template
 from flask_socketio import SocketIO, emit
+from model import Message
 from game import Game
 
 
 class Server:
-    def __init__(self, host="0.0.0.0", port=5000):
+    def __init__(self, host="127.0.0.1", port=5000):
         self.host = host
         self.port = port
         self.app = Flask(__name__)
@@ -20,19 +21,13 @@ class Server:
     def index(self):
         return render_template("index.html")
 
-    def send_message(self, player, content, type, room="ALL"):
-        message = {
-            "player": player,
-            "content": content,
-            "type": type,
-            "room": room,
-        }
+    def send_message(self, message: Message):
         emit(
-            "message",
-            message,
+            message.json()["head"],
+            message.json(),
             broadcast=True,
         )
-        return message
+        return message.json()
 
     def send_stream(self, player, response, type, room="ALL"):
         """response须为client回复对象"""
@@ -81,13 +76,10 @@ class Server:
         self.game.parse_order(order)
         self.fresh_state()
 
-    def run_debug(self):
-        self.socketio.run(self.app, debug=True)
-
     def run(self):
-        self.socketio.run(self.app, host=self.host, port=self.port)
+        self.socketio.run(self.app, debug=True)
 
 
 if __name__ == "__main__":
     server = Server()
-    server.run_debug()
+    server.run()

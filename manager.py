@@ -1,4 +1,4 @@
-from config import playerList, CHARACTERS, LOCAL_RULES
+from config import playerList, CHARACTERS
 from player import Player
 import random
 
@@ -8,9 +8,6 @@ class Manager:
         self.game = game
         self.players_state = []
         self.players_object = []
-
-    def get_game_rules(self):
-        return str(LOCAL_RULES)
 
     def init_players(self):
         random.shuffle(CHARACTERS)
