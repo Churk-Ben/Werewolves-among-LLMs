@@ -82,11 +82,11 @@ class Server:
         self.fresh_state()
 
     def run_debug(self):
-        self.socketio.run(self.app, debug=True,allow_unsafe_werkzeug=True)
+        self.socketio.run(self.app, debug=True)
 
     def run(self):
         self.socketio.run(self.app, host=self.host, port=self.port)
-#aaa
+
 
 if __name__ == "__main__":
     server = Server()
