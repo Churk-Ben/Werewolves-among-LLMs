@@ -20,7 +20,18 @@ class Server:
     def index(self):
         return render_template("index.html")
 
-    def send_message(self, player, content, type, room="ALL"):
+    def connect(self):
+        self.game = Game(self)
+        self.game.game_init()
+        self.fresh_state()
+
+    def handle_order(self, data):
+        order = data["content"]
+        self.game.parse_order(order)
+        self.fresh_state()
+
+    # communal functions
+    def send_message(self, player, content, type, room="ALL") -> str:
         message = {
             "player": player,
             "content": content,
@@ -34,7 +45,7 @@ class Server:
         )
         return message
 
-    def send_stream(self, player, response, type, room="ALL"):
+    def send_stream(self, player, response, type, room="ALL") -> str:
         """response须为client回复对象"""
         message = {
             "player": player,
@@ -71,16 +82,7 @@ class Server:
             broadcast=True,
         )
 
-    def connect(self):
-        self.game = Game(self)
-        self.game.game_init()
-        self.fresh_state()
-
-    def handle_order(self, data):
-        order = data["content"]
-        self.game.parse_order(order)
-        self.fresh_state()
-
+    # run functions
     def run_debug(self):
         self.socketio.run(self.app, debug=True)
 
