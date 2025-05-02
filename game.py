@@ -6,24 +6,24 @@ class Game:
         self.server = server
         self.manager = Manager(self)
         self.state = {
-            "phase": "欢迎来到狼人杀！",
+            "phase": "欢迎来到狼人杀.",
             "night": 0,
             "players": [],
         }
 
     def parse_order(self, order):
-        """处理游戏指令并分发给对应角色，增加异常处理"""
+        """处理游戏指令并分发给对应角色, 增加异常处理"""
         try:
             match order:
-                case "游戏开始":
+                case "auto":
                     self.game_run()
                 case _:
-                    self.server.send_message("系统", f"未知指令: {order}", "think")
+                    self.server.send_message("系统", f"未知指令: {order}", "thought")
         except Exception as e:
             self.server.send_message("系统", f"指令解析异常: {str(e)}", "error")
 
     def game_init(self):
-        """初始化游戏, 分配角色. 这会创建新的Player对象, 清空AI玩家的记忆，增加异常处理"""
+        """初始化游戏, 分配角色. 这会创建新的Player对象, 清空AI玩家的记忆, 增加异常处理"""
         try:
             self.state["phase"] = "游戏正在初始化..."
             result = self.manager.init_players()
@@ -40,7 +40,7 @@ class Game:
             "ALL",
             self.server.send_message(
                 "系统",
-                "游戏开始.天黑,请闭眼.",
+                "天黑请闭眼.",
                 "speech",
             ),
         )
@@ -50,7 +50,7 @@ class Game:
             if player["role"] == "WEREWOLF":
                 werewolfs.append(player["name"])
         if werewolfs:
-            werewolf_info = f"本场狼人是: {', '.join(werewolfs)}。"
+            werewolf_info = f"本场狼人是: {', '.join(werewolfs)}."
             self.manager.broadcast_to_player(
                 "WEREWOLF",
                 werewolf_info,

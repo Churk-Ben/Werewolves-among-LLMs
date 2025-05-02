@@ -84,6 +84,11 @@ body {
     color: #1976d2;
 }
 
+.message.error {
+    background-color: #ffebee;
+    color: #b71c1c;
+}
+
 .chat-input {
     padding: 20px;
     border-top: 1px solid #e0e0e0;
