@@ -8,6 +8,3 @@ DEFAULT_MODEL = "deepseek-chat"
 # 角色配置
 CHARACTERS = ["WEREWOLF", "WEREWOLF", "VILLAGER", "VILLAGER", "SEER", "WITCH"]
 playerList = ["Alice", "Bob", "Charlie", "David", "Eve", "Frank"]
-
-# 本地游戏规则
-LOCAL_RULES = ""
