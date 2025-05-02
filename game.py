@@ -14,22 +14,12 @@ class Game:
     def parse_order(self, order):
         """处理游戏指令并分发给对应角色"""
         match order:
-            case "狼人行动":
-                self.manager.let_player_act("WEREWOLF", "狼人请选择要击杀的目标")
-            case "预言家查验":
-                self.manager.let_player_act("SEER", "预言家请选择要查验的玩家")
-            case "女巫救人/毒人":
-                self.manager.let_player_act("WITCH", "女巫请选择要救或毒的目标")
-            case "白天发言":
-                self.day_phase()
-            case "投票":
-                self.vote_phase()
+
             case "游戏开始":
-                self.game_start()
-            case "初始化游戏":
-                self.game_init()
+                self.game_run()
+
             case _:
-                self.manager.broadcast_to_player("ALL", f"未知指令: {order}")
+                self.server.send_message("系统", f"未知指令: {order}", "think")
 
     def game_init(self):
         """初始化游戏, 分配角色. 这会创建新的Player对象, 清空AI玩家的记忆"""
@@ -92,66 +82,40 @@ class Game:
         )
 
         # 让所有存活玩家依次发言
-        alive_players = [player for player in self.state["players"] if player["alive"]]
+        alive_players = []
+        for player in self.manager.players_state:
+            if player["alive"]:
+                alive_players.append(player["name"])
+
+        for player in alive_players:
+            self.manager.let_player_act(
+                player,
+                "白天阶段，请发言。",
+            )
+
+        # 开始投票阶段
+        self.vote_phase()
 
     def vote_phase(self):
         """投票阶段"""
         self.state["phase"] = "投票阶段"
+        day_number = self.state["night"]
 
         # 获取存活玩家列表
-        alive_players = [
-            player["name"] for player in self.state["players"] if player["alive"]
-        ]
+        alive_players = []
+        for player in self.manager.players_state:
+            if player["alive"]:
+                alive_players.append(player["name"])
 
         # 发送系统消息，开始投票
-        day_number = self.state["current_night"]
-        vote_message = f"现在是第{day_number}天投票环节，存活玩家: {', '.join(alive_players)}。请各位玩家投出你认为是狼人的玩家。得票最多的玩家将被放逐。"
-        temp = self.server.send_message(
-            "系统",
-            vote_message,
-            "speech",
-        )
+        vote_message = f"现在是第{day_number}天投票环节，存活玩家: {', '.join(alive_players)}。请投票."
         self.manager.broadcast_to_player(
             "ALL",
-            temp,
-        )
-
-        # 让所有存活玩家进行投票
-        day_number = self.state["current_night"]
-        vote_prompt = f"现在是第{day_number}天投票阶段，请投票选出你认为是狼人的玩家，可选目标: {', '.join(alive_players)}。明确写出玩家名字，格式为'我投票给XXX'。"
-        self.manager.let_player_act(
-            "ALL",
-            vote_prompt,
-        )
-
-        # 这里应该有投票统计的逻辑，暂时模拟一下
-        # 实际应该从玩家的回复中解析出投票目标
-        # 简化处理：假设投票第一个狼人
-        voted_player = None
-        for player in self.state["players"]:
-            if player["role"] == "WEREWOLF" and player["alive"]:
-                voted_player = player
-                self.state["day_voted"] = player["name"]
-                player["alive"] = False
-                break
-
-        # 公布投票结果
-        if voted_player:
-            result_message = f"投票结束，{voted_player['name']}被放逐出局。"
-            # 公布被放逐玩家的身份
-            role_reveal = f"{voted_player['name']}的身份是{voted_player['role']}。"
-            result_message += role_reveal
-        else:
-            result_message = "投票结束，没有玩家被放逐。"
-
-        temp = self.server.send_message(
-            "系统",
-            result_message,
-            "speech",
-        )
-        self.manager.broadcast_to_player(
-            "ALL",
-            temp,
+            self.server.send_message(
+                "系统",
+                vote_message,
+                "speech",
+            ),
         )
 
         # 检查游戏是否结束
@@ -172,39 +136,38 @@ class Game:
 
         # 判断游戏是否结束
         if alive_werewolves == 0:
-            # 狼人全部出局，好人胜利
             end_message = "游戏结束！所有狼人都已出局，好人阵营胜利！"
             self.state["phase"] = "游戏结束 - 好人胜利"
         elif alive_werewolves >= alive_villagers:
-            # 狼人数量大于等于好人，狼人胜利
             end_message = "游戏结束！狼人数量已经大于等于好人数量，狼人阵营胜利！"
             self.state["phase"] = "游戏结束 - 狼人胜利"
         else:
-            # 游戏继续
             return
 
         # 发送游戏结束消息
-        temp = self.server.send_message(
-            "系统",
-            end_message,
-            "speech",
-        )
         self.manager.broadcast_to_player(
             "ALL",
-            temp,
+            self.server.send_message(
+                "系统",
+                end_message,
+                "speech",
+            ),
         )
 
-        # 公布所有玩家身份
-        roles_message = "玩家身份揭晓：\n"
-        for player in self.state["players"]:
-            roles_message += f"{player['name']}: {player['role']}\n"
+    def game_run(self):
+        """游戏主循环"""
+        self.game_init()
+        self.game_start()
+        while True:
+            # 夜晚阶段
+            self.night_phase()
 
-        temp = self.server.send_message(
-            "系统",
-            roles_message,
-            "speech",
-        )
-        self.manager.broadcast_to_player(
-            "ALL",
-            temp,
-        )
+            # 白天阶段
+            self.day_phase()
+
+            # 结束游戏
+            if (
+                self.state["phase"] == "游戏结束 - 好人胜利"
+                or self.state["phase"] == "游戏结束 - 狼人胜利"
+            ):
+                break

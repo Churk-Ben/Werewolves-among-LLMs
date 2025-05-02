@@ -31,7 +31,7 @@ class Server:
         self.fresh_state()
 
     # communal functions
-    def send_message(self, player, content, type, room="ALL") -> str:
+    def send_message(self, player, content, type, room="ALL"):
         message = {
             "player": player,
             "content": content,
@@ -45,7 +45,7 @@ class Server:
         )
         return message
 
-    def send_stream(self, player, response, type, room="ALL") -> str:
+    def send_stream(self, player, response, type, room="ALL"):
         """response须为client回复对象"""
         message = {
             "player": player,

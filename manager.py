@@ -45,13 +45,13 @@ class Manager:
                 if player.role == room:
                     player.listen(message)
 
-    def let_player_act(self, room, prompt):
-        if room == "ALL":
+    def let_player_act(self, name, prompt):
+        if name == "ALL":
             for player in self.players_object:
                 player.act(prompt)
         else:
             for player in self.players_object:
-                if player.role == room:
+                if player.name == name:
                     player.act(prompt)
 
 
