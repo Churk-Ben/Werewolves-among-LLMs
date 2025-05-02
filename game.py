@@ -12,16 +12,24 @@ class Game:
         }
 
     def parse_order(self, order):
-        """除了必要的系统级指令，其他输入给对应的房间"""
+        """处理游戏指令并分发给对应角色"""
         match order:
             case "狼人行动":
-                self.manager.let_player_act("ALL", "狼人行动")
+                self.manager.let_player_act("WEREWOLF", "狼人请选择要击杀的目标")
             case "预言家查验":
-                self.manager.let_player_act("ALL", "预言家查验")
+                self.manager.let_player_act("SEER", "预言家请选择要查验的玩家")
             case "女巫救人/毒人":
-                self.manager.let_player_act("ALL", "女巫救人/毒人")
+                self.manager.let_player_act("WITCH", "女巫请选择要救或毒的目标")
+            case "白天发言":
+                self.day_phase()
+            case "投票":
+                self.vote_phase()
+            case "游戏开始":
+                self.game_start()
+            case "初始化游戏":
+                self.game_init()
             case _:
-                pass
+                self.manager.broadcast_to_player("ALL", f"未知指令: {order}")
 
     def game_init(self):
         """初始化游戏, 分配角色. 这会创建新的Player对象, 清空AI玩家的记忆"""
@@ -72,55 +80,19 @@ class Game:
     def day_phase(self):
         """白天阶段. 发言, 投票"""
         self.state["phase"] = "天亮了"
+        day_number = self.state["night"]
 
-        alive_players = [
-            player["name"] for player in self.state["players"] if player["alive"]
-        ]
-        # 天数应该是夜晚数+1，因为第零夜后是第一天
-        day_number = self.state["current_night"]
-        day_message = f"现在是第{day_number}天白天时间，存活玩家: {', '.join(alive_players)}。请各位玩家依次发言，分析昨天的情況，找出狼人。"
-        temp = self.server.send_message(
-            "系统",
-            day_message,
-            "speech",
-        )
         self.manager.broadcast_to_player(
             "ALL",
-            temp,
+            self.server.send_message(
+                "系统",
+                f"现在是第{day_number}天，白天阶段开始。",
+                "speech",
+            ),
         )
 
         # 让所有存活玩家依次发言
         alive_players = [player for player in self.state["players"] if player["alive"]]
-        for i, player in enumerate(alive_players):
-            # 提示当前玩家发言
-            day_number = self.state["current_night"]
-            player_prompt = f"现在是第{day_number}天，轮到{player['name']}发言，发言顺序{i+1}/{len(alive_players)}"
-            speak_message = self.server.send_message(
-                "系统",
-                player_prompt,
-                "speech",
-            )
-            self.manager.broadcast_to_player(
-                "ALL",
-                speak_message,
-            )
-
-            # 让玩家发言
-            self.manager.let_player_act(
-                "ALL", "请分析场上局势，表达你的看法，可以质疑其他玩家或为自己辩护。"
-            )
-
-            # 给玩家一些时间思考
-            thinking_message = "其他玩家正在思考中..."
-            think_msg = self.server.send_message(
-                "系统",
-                thinking_message,
-                "thought",
-            )
-            self.manager.broadcast_to_player(
-                "ALL",
-                think_msg,
-            )
 
     def vote_phase(self):
         """投票阶段"""
