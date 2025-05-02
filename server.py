@@ -38,11 +38,7 @@ class Server:
             "type": type,
             "room": room,
         }
-        emit(
-            "message",
-            message,
-            broadcast=True,
-        )
+        self._emit_message(message)
         return message
 
     def send_stream(self, player, response, type, room="ALL"):
@@ -52,35 +48,37 @@ class Server:
             "type": type,
             "room": room,
         }
-        emit(
-            "message_start",
-            message,
-            broadcast=True,
-        )
+        self._emit_message(message, event="message_start")
         content = ""
-        for chunk in response:
-            if chunk.choices[0].delta.content:
-                chunk_content = chunk.choices[0].delta.content
-                content += chunk_content
-                emit(
-                    "message_chunk",
-                    {"chunk": chunk_content},
-                    broadcast=True,
-                )
-        emit(
-            "message_end",
-            {},
-            broadcast=True,
-        )
+        try:
+            for chunk in response:
+                chunk_content = getattr(chunk.choices[0].delta, "content", None)
+                if chunk_content:
+                    content += chunk_content
+                    self._emit_message({"chunk": chunk_content}, event="message_chunk")
+        except Exception as e:
+            self._emit_message({"error": str(e)}, event="message_error")
+        self._emit_message({}, event="message_end")
         message["content"] = content
         return message
 
+    def _emit_message(self, message, event="message"):
+        try:
+            emit(event, message, broadcast=True)
+        except Exception as e:
+            # 可以根据需要记录日志
+            pass
+
     def fresh_state(self):
-        emit(
-            "fresh_state",
-            self.game.state,
-            broadcast=True,
-        )
+        try:
+            emit(
+                "fresh_state",
+                getattr(self.game, "state", {}),
+                broadcast=True,
+            )
+        except Exception as e:
+            # 可以根据需要记录日志
+            pass
 
     # run functions
     def run_debug(self):

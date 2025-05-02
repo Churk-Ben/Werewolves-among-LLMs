@@ -21,7 +21,9 @@ class Player:
         ]
 
     def listen(self, message):
-        """存储同房间他人和自己的消息"""
+        """存储同房间他人和自己的消息，避免重复添加，提升健壮性"""
+        if not message or "player" not in message or "content" not in message:
+            return
         if message["player"] == self.name:
             self.history.append(
                 {
@@ -40,18 +42,21 @@ class Player:
             )
 
     def act(self, prompt):
-        """根据思考结果执行行动(发言或投票)(speech)"""
-        response = self.client.chat.completions.create(
-            model=DEFAULT_MODEL,
-            messages=self.history
-            + [
-                {
-                    "role": "user",
-                    "name": "Judger",
-                    "content": prompt,
-                },
-            ],
-            stream=True,
-            top_p=self.top_p,
-        )
-        self.manager.game.server.send_stream(self.name, response, "speech")
+        """根据思考结果执行行动(发言或投票)(speech)，增加异常处理"""
+        try:
+            response = self.client.chat.completions.create(
+                model=DEFAULT_MODEL,
+                messages=self.history
+                + [
+                    {
+                        "role": "user",
+                        "name": "Judger",
+                        "content": prompt,
+                    },
+                ],
+                stream=True,
+                top_p=self.top_p,
+            )
+            self.manager.game.server.send_stream(self.name, response, "speech")
+        except Exception as e:
+            self.manager.game.server.send_message(self.name, f"AI响应异常: {str(e)}", "error")
