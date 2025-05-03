@@ -19,7 +19,9 @@ class Game:
                 case "auto":
                     self.game_run()
                 case _:
-                    self.server.send_message("系统", GAME_PROMPTS["unknown_command"].format(order), "thought")
+                    self.server.send_message(
+                        "系统", GAME_PROMPTS["unknown_command"].format(order), "thought"
+                    )
         except Exception as e:
             self.server.send_message("系统", f"指令解析异常: {str(e)}", "error")
 
@@ -31,9 +33,13 @@ class Game:
             self.state["players"] = result.get("players", [])
             self.state["night"] = 0
             if "error" in result:
-                self.server.send_message("系统", GAME_PROMPTS["init_error"].format(result['error']), "error")
+                self.server.send_message(
+                    "系统", GAME_PROMPTS["init_error"].format(result["error"]), "error"
+                )
         except Exception as e:
-            self.server.send_message("系统", GAME_PROMPTS["game_init_error"].format(str(e)), "error")
+            self.server.send_message(
+                "系统", GAME_PROMPTS["game_init_error"].format(str(e)), "error"
+            )
 
     def game_start(self):
         self.state["phase"] = GAME_PHASES["night"]
@@ -42,6 +48,16 @@ class Game:
             self.server.send_message(
                 "系统",
                 GAME_PROMPTS["night_start"],
+                "speech",
+            ),
+        )
+        # 告知所有玩家场信息
+        self.manager.broadcast_to_player(
+            "ALL",
+            self.server.send_message(
+                "系统",
+                f"玩家列表: {', '.join([player['name'] for player in self.state['players']])}\n"
+                + f"已分配身份: {', '.join([player['role'] for player in self.state['players']])}",
                 "speech",
             ),
         )
@@ -74,7 +90,9 @@ class Game:
                 ),
             )
         except Exception as e:
-            self.server.send_message("系统", GAME_PROMPTS["night_phase_error"].format(str(e)), "error")
+            self.server.send_message(
+                "系统", GAME_PROMPTS["night_phase_error"].format(str(e)), "error"
+            )
 
     def day_phase(self):
         """白天阶段. 发言, 投票，增加异常处理"""
@@ -100,7 +118,9 @@ class Game:
                 )
             self.vote_phase()
         except Exception as e:
-            self.server.send_message("系统", GAME_PROMPTS["day_phase_error"].format(str(e)), "error")
+            self.server.send_message(
+                "系统", GAME_PROMPTS["day_phase_error"].format(str(e)), "error"
+            )
 
     def vote_phase(self):
         """投票阶段，增加异常处理"""
@@ -111,7 +131,9 @@ class Game:
             for player in self.manager.players_state:
                 if player["alive"]:
                     alive_players.append(player["name"])
-            vote_message = GAME_PROMPTS["vote_phase"].format(day_number, ', '.join(alive_players))
+            vote_message = GAME_PROMPTS["vote_phase"].format(
+                day_number, ", ".join(alive_players)
+            )
             self.manager.broadcast_to_player(
                 "ALL",
                 self.server.send_message(
@@ -122,7 +144,9 @@ class Game:
             )
             self.check_game_end()
         except Exception as e:
-            self.server.send_message("系统", GAME_PROMPTS["vote_phase_error"].format(str(e)), "error")
+            self.server.send_message(
+                "系统", GAME_PROMPTS["vote_phase_error"].format(str(e)), "error"
+            )
 
     def check_game_end(self):
         """检查游戏是否结束，增加异常处理"""
@@ -152,7 +176,9 @@ class Game:
                 ),
             )
         except Exception as e:
-            self.server.send_message("系统", GAME_PROMPTS["game_end_error"].format(str(e)), "error")
+            self.server.send_message(
+                "系统", GAME_PROMPTS["game_end_error"].format(str(e)), "error"
+            )
 
     def game_run(self):
         """游戏主循环，增加异常处理"""
@@ -168,4 +194,6 @@ class Game:
                 ):
                     break
         except Exception as e:
-            self.server.send_message("系统", GAME_PROMPTS["main_loop_error"].format(str(e)), "error")
+            self.server.send_message(
+                "系统", GAME_PROMPTS["main_loop_error"].format(str(e)), "error"
+            )

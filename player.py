@@ -13,10 +13,15 @@ class Player:
 
     def reset_history(self):
         """重置玩家的历史记录，清空记忆"""
+        initial_message = (
+            f"你是一个狼人杀玩家，你叫{self.name}，身份是{self.role}."
+            + "在白天来临前,你没见过任何其他玩家.在接下来的游戏中,请不要在计划外暴露自己的身份."
+            + "你的输出只包含对话和你想要展示给**所有人**的动作.注意伪装."
+        )
         self.history = [
             {
                 "role": "system",
-                "content": f"你是一个狼人杀玩家，你叫{self.name}，身份是{self.role}.",
+                "content": initial_message,
             },
         ]
 
