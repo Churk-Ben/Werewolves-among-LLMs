@@ -51,11 +51,14 @@ class Manager:
             return
         if name == "ALL":
             for player in self.players_object:
-                player.act(prompt)
+                response = player.act(prompt)
+                player.listen(response)
+
         else:
             for player in self.players_object:
                 if player.name == name:
-                    player.act(prompt)
+                    response = player.act(prompt)
+                    player.listen(response)
 
 
 if __name__ == "__main__":

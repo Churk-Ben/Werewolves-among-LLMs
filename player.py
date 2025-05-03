@@ -1,5 +1,8 @@
-from config import API_KEY, API_URL, DEFAULT_MODEL
+from email import message
+
 from openai import OpenAI
+
+from config import API_KEY, API_URL, DEFAULT_MODEL
 
 
 class Player:
@@ -16,7 +19,7 @@ class Player:
         self.history = [
             {
                 "role": "system",
-                "content": f"你是一个狼人杀玩家，你叫{self.name}，身份是{self.role}。",
+                "content": f"你是一个狼人杀玩家，你叫{self.name}，身份是{self.role}.",
             },
         ]
 
@@ -57,6 +60,11 @@ class Player:
                 stream=True,
                 top_p=self.top_p,
             )
-            self.manager.game.server.send_stream(self.name, response, "speech")
+            message = self.manager.game.server.send_stream(
+                self.name, response, "speech"
+            )
+            return message
         except Exception as e:
-            self.manager.game.server.send_message(self.name, f"AI响应异常: {str(e)}", "error")
+            self.manager.game.server.send_message(
+                self.name, f"AI响应异常: {str(e)}", "error"
+            )
