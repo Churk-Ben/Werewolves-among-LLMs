@@ -114,8 +114,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // 更新游戏阶段
         gamePhase.textContent = `阶段: ${state.phase}`;
         
-        // 根据游戏阶段更改背景颜色
-        updateBackgroundByPhase(state.phase);
+
         
         // 显示当前天数
         if (state.current_night > 0) {
@@ -202,27 +201,5 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    // 根据游戏阶段更改背景颜色
-    function updateBackgroundByPhase(phase) {
-        const container = document.querySelector('.container');
-        const body = document.body;
-        
-        // 重置所有阶段相关的类
-        body.classList.remove('phase-night', 'phase-day', 'phase-vote', 'phase-game-over');
-        
-        // 根据不同阶段添加对应的类
-        if (phase.includes('夜') || phase.includes('狼人') || phase.includes('女巫') || phase.includes('预言家')) {
-            // 夜晚相关阶段
-            body.classList.add('phase-night');
-        } else if (phase.includes('白天') || phase.includes('天亮了')) {
-            // 白天相关阶段
-            body.classList.add('phase-day');
-        } else if (phase.includes('投票')) {
-            // 投票相关阶段
-            body.classList.add('phase-vote');
-        } else if (phase.includes('游戏结束')) {
-            // 游戏结束阶段
-            body.classList.add('phase-game-over');
-        }
-    }
+
 });
