@@ -1,11 +1,10 @@
 from flask import Flask, render_template
 from flask_socketio import SocketIO, emit
-from model import Message
 from game import Game
 
 
 class Server:
-    def __init__(self, host="127.0.0.1", port=5000):
+    def __init__(self, host="0.0.0.0", port=5000):
         self.host = host
         self.port = port
         self.app = Flask(__name__)
@@ -84,6 +83,9 @@ class Server:
     # run functions
     def run_debug(self):
         self.socketio.run(self.app, debug=True)
+
+    def run(self):
+        self.socketio.run(self.app, host=self.host, port=self.port)
 
 
 if __name__ == "__main__":

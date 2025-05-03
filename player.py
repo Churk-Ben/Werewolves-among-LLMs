@@ -6,12 +6,11 @@ from config import API_KEY, API_URL, DEFAULT_MODEL
 
 
 class Player:
-    def __init__(self, manager, name, role, p, client: OpenAI, model=DEFAULT_MODEL):
+    def __init__(self, manager, name, role, p):
+        self.client = OpenAI(api_key=API_KEY, base_url=API_URL)
         self.manager = manager
         self.name = name
         self.role = role
-        self.client = client
-        self.model = model
         self.top_p = p
         self.reset_history()
 

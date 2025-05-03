@@ -1,5 +1,4 @@
 from config import playerList, CHARACTERS
-from config import playerList, CHARACTERS
 from player import Player
 import random
 
@@ -35,22 +34,6 @@ class Manager:
 
     def get_players_state(self):
         return {"players": self.players_state}
-
-    def _execute_player_action(self, room, action_type, data):
-        """通用的玩家行动执行方法
-        Args:
-            room: 目标房间("ALL"或特定角色)
-            action_type: 行动类型("listen"或"act")
-            data: 传递给行动方法的数据(message或prompt)
-        """
-        target_players = [
-            p for p in self.players_object if room == "ALL" or p.role == room
-        ]
-        for player in target_players:
-            if action_type == "listen":
-                player.listen(data)
-            elif action_type == "act":
-                player.act(data)
 
     def broadcast_to_player(self, room, message):
         if not message:
