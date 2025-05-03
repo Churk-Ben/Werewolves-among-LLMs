@@ -6,150 +6,168 @@ class Game:
     def __init__(self, server):
         self.server = server
         self.manager = Manager(self)
-        self.rules = ""
         self.state = {
-            "phase": "欢迎来到狼人杀！",
+            "phase": "欢迎来到狼人杀.",
+            "night": 0,
             "players": [],
-            "current_night": 0,
-            "killed_player": None,
-            "witch_saved": False,
-            "witch_poisoned": False,
-            "seer_checked": [],  # 预言家已查验的玩家
-            "werewolves": [],  # 狼人列表，用于让狼人互相知晓
-            "day_voted": None,  # 白天投票出局的玩家
         }
 
-    def parse_order(self, order):  # 之后会用ai分析指令
-        # 检查是否是开始游戏指令
-        if "0" in order:
-            self.game_start()
-            return
-
-        # 检查是否是自动流程指令
-        if "auto" in order:
-            self.game_flow()
-            return
-
-        # 其他指令处理
-        match True:
-            case _ if "1" in order:
-                self.night_phase()
-
-            case _ if "2" in order:
-                self.day_phase()
-
-            case _ if "3" in order:
-                self.vote_phase()
-
-            case _:
-                message = Message("系统", "未解析的指令", "system")
-                self.server.send_message("系统", "未解析的指令", "thought")
-
-    def game_flow(self):
-        """自动执行游戏流程，从当前阶段开始自动进行到游戏结束"""
-        while not self.check_game_end():
-            self.night_phase()
-            if self.check_game_end():
-                break
-            self.day_phase()
-            if self.check_game_end():
-                break
-            self.vote_phase()
+    def parse_order(self, order):
+        """处理游戏指令, 分发给对应角色"""
+        try:
+            match order:
+                case "auto":
+                    self.game_run()
+                case _:
+                    self.server.send_message("系统", f"未知指令: {order}", "thought")
+        except Exception as e:
+            self.server.send_message("系统", f"指令解析异常: {str(e)}", "error")
 
     def game_init(self):
-        # 初始化玩家，这会创建新的Player对象，清空AI玩家的记忆
-        self.state["players"] = self.manager.init_players()["players"]
-        self.rules = self.manager.get_game_rules()
-
-        # 初始化狼人列表，让狼人互相知晓
-        self.state["werewolves"] = []
-        for player in self.state["players"]:
-            if player["role"] == "WEREWOLF":
-                self.state["werewolves"].append(player["name"])
-
-        # 重置游戏状态
-        self.state["current_night"] = 0  # 从第0夜开始
-        self.state["killed_player"] = None
-        self.state["witch_saved"] = False
-        self.state["witch_poisoned"] = False
-        self.state["seer_checked"] = []
-        self.state["day_voted"] = None
+        """初始化游戏, 分配角色"""
+        try:
+            self.state["phase"] = "游戏正在初始化..."
+            result = self.manager.init_players()
+            self.state["players"] = result.get("players", [])
+            self.state["night"] = 0
+            if "error" in result:
+                self.server.send_message(
+                    "系统", f"玩家初始化异常: {result['error']}", "error"
+                )
+        except Exception as e:
+            self.server.send_message("系统", f"游戏初始化异常: {str(e)}", "error")
 
     def game_start(self):
-        self.state["phase"] = "游戏开始！"
+        self.state["phase"] = "天黑请闭眼."
+        self.manager.broadcast_to_player(
+            "ALL",
+            self.server.send_message(
+                "系统",
+                "天黑请闭眼.",
+                "speech",
+            ),
+        )
+        # 让狼人知晓友方信息
+        werewolfs = []
+        for player in self.state["players"]:
+            if player["role"] == "WEREWOLF":
+                werewolfs.append(player["name"])
+        if werewolfs:
+            werewolf_info = f"本场狼人是: {', '.join(werewolfs)}."
+            self.manager.broadcast_to_player(
+                "WEREWOLF",
+                werewolf_info,
+            )
+        # 开始第一夜
+        self.night_phase()
 
     def night_phase(self):
-        """夜晚阶段，包括狼人行动、预言家查验、女巫救人/毒人"""
-        self.state["current_night"] += 1
-        self.werewolf_act()
-        self.seer_act()
-        self.witch_act()
-
-    def werewolf_act(self):
-        """狼人行动阶段"""
-        self.state["phase"] = "天黑请闭眼，狼人请睁眼。"
-        # 通知狼人选择目标
-        werewolf_prompt = "请选择你要击杀的目标。"
-        self.manager.broadcast_to_player("WEREWOLF", Message("系统", werewolf_prompt, "system"))
-        self.manager.let_player_act("WEREWOLF", werewolf_prompt)
-
-    def seer_act(self):
-        """预言家行动阶段"""
-        self.state["phase"] = "狼人请闭眼，预言家请睁眼。"
-        # 通知预言家选择查验目标
-        seer_prompt = "请选择你要查验的玩家。"
-        self.manager.broadcast_to_player("SEER", Message("系统", seer_prompt, "system"))
-        self.manager.let_player_act("SEER", seer_prompt)
-
-    def witch_act(self):
-        """女巫行动阶段"""
-        self.state["phase"] = "预言家请闭眼，女巫请睁眼。"
-        if not self.state["witch_saved"] or not self.state["witch_poisoned"]:
-            witch_prompt = "你有解药和毒药，是否使用？"
-            self.manager.broadcast_to_player("WITCH", Message("系统", witch_prompt, "system"))
-            self.manager.let_player_act("WITCH", witch_prompt)
+        """夜晚阶段. 狼人行动, 预言家行动, 女巫行动"""
+        try:
+            self.state["night"] += 1
+            night_number = self.state["night"]
+            self.state["phase"] = f"第{str(night_number)}夜"
+            self.manager.broadcast_to_player(
+                "ALL",
+                self.server.send_message(
+                    "系统",
+                    "@death_message",
+                    "speech",
+                ),
+            )
+        except Exception as e:
+            self.server.send_message("系统", f"夜晚阶段异常: {str(e)}", "error")
 
     def day_phase(self):
-        """白天发言阶段"""
-        self.state["phase"] = "白天发言阶段"
-        # 公布死亡信息
-        if self.state["killed_player"]:
-            death_msg = f"昨晚{self.state['killed_player']}被杀死了。"
-            self.manager.broadcast_to_player("ALL", Message("系统", death_msg, "system"))
-        
-        # 所有存活玩家依次发言
-        speak_prompt = "请发表你的看法。"
-        self.manager.broadcast_to_player("ALL", Message("系统", speak_prompt, "system"))
-        self.manager.let_player_act("ALL", speak_prompt)
+        """白天阶段. 发言, 投票"""
+        try:
+            self.state["phase"] = "天亮了"
+            day_number = self.state["night"]
+            self.manager.broadcast_to_player(
+                "ALL",
+                self.server.send_message(
+                    "系统",
+                    f"现在是第{day_number}天，白天阶段开始。",
+                    "speech",
+                ),
+            )
+            alive_players = []
+            for player in self.manager.players_state:
+                if player["alive"]:
+                    alive_players.append(player["name"])
+            for player in alive_players:
+                self.manager.let_player_act(
+                    player,
+                    "白天阶段，请发言。",
+                )
+            self.vote_phase()
+        except Exception as e:
+            self.server.send_message("系统", f"白天阶段异常: {str(e)}", "error")
 
     def vote_phase(self):
         """投票阶段"""
-        self.state["phase"] = "投票阶段"
-        vote_prompt = "请投票选择你认为的狼人。"
-        self.manager.broadcast_to_player("ALL", Message("系统", vote_prompt, "system"))
-        self.manager.let_player_act("ALL", vote_prompt)
+        try:
+            self.state["phase"] = "投票阶段"
+            day_number = self.state["night"]
+            alive_players = []
+            for player in self.manager.players_state:
+                if player["alive"]:
+                    alive_players.append(player["name"])
+            vote_message = f"现在是第{day_number}天投票环节，存活玩家: {', '.join(alive_players)}。请投票."
+            self.manager.broadcast_to_player(
+                "ALL",
+                self.server.send_message(
+                    "系统",
+                    vote_message,
+                    "speech",
+                ),
+            )
+            self.check_game_end()
+        except Exception as e:
+            self.server.send_message("系统", f"投票阶段异常: {str(e)}", "error")
 
     def check_game_end(self):
         """检查游戏是否结束"""
-        werewolf_count = 0
-        villager_count = 0
-        
-        for player in self.state["players"]:
-            if not player["alive"]:
-                continue
-            if player["role"] == "WEREWOLF":
-                werewolf_count += 1
+        try:
+            alive_werewolves = 0
+            alive_villagers = 0
+            for player in self.state["players"]:
+                if player["alive"]:
+                    if player["role"] == "WEREWOLF":
+                        alive_werewolves += 1
+                    else:
+                        alive_villagers += 1
+            if alive_werewolves == 0:
+                end_message = "游戏结束！所有狼人都已出局，好人阵营胜利！"
+                self.state["phase"] = "游戏结束 - 好人胜利"
+            elif alive_werewolves >= alive_villagers:
+                end_message = "游戏结束！狼人数量已经大于等于好人数量，狼人阵营胜利！"
+                self.state["phase"] = "游戏结束 - 狼人胜利"
             else:
-                villager_count += 1
-        
-        # 狼人胜利条件：狼人数量大于等于好人数量
-        if werewolf_count >= villager_count:
-            self.state["phase"] = "游戏结束，狼人胜利！"
-            return True
-        
-        # 好人胜利条件：狼人全部出局
-        if werewolf_count == 0:
-            self.state["phase"] = "游戏结束，好人胜利！"
-            return True
-        
-        return False
+                return
+            self.manager.broadcast_to_player(
+                "ALL",
+                self.server.send_message(
+                    "系统",
+                    end_message,
+                    "speech",
+                ),
+            )
+        except Exception as e:
+            self.server.send_message("系统", f"结算阶段异常: {str(e)}", "error")
+
+    def game_run(self):
+        """游戏主循环"""
+        try:
+            self.game_init()
+            self.game_start()
+            while True:
+                self.night_phase()
+                self.day_phase()
+                if (
+                    self.state["phase"] == "游戏结束 - 好人胜利"
+                    or self.state["phase"] == "游戏结束 - 狼人胜利"
+                ):
+                    break
+        except Exception as e:
+            self.server.send_message("系统", f"主循环异常: {str(e)}", "error")

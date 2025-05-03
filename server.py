@@ -21,51 +21,6 @@ class Server:
     def index(self):
         return render_template("index.html")
 
-    def send_message(self, message: Message):
-        emit(
-            message.json()["head"],
-            message.json(),
-            broadcast=True,
-        )
-        return message.json()
-
-    def send_stream(self, player, response, type, room="ALL"):
-        """response须为client回复对象"""
-        message = {
-            "player": player,
-            "type": type,
-            "room": room,
-        }
-        emit(
-            "message_start",
-            message,
-            broadcast=True,
-        )
-        content = ""
-        for chunk in response:
-            if chunk.choices[0].delta.content:
-                chunk_content = chunk.choices[0].delta.content
-                content += chunk_content
-                emit(
-                    "message_chunk",
-                    {"chunk": chunk_content},
-                    broadcast=True,
-                )
-        emit(
-            "message_end",
-            {},
-            broadcast=True,
-        )
-        message["content"] = content
-        return message
-
-    def fresh_state(self):
-        emit(
-            "fresh_state",
-            self.game.state,
-            broadcast=True,
-        )
-
     def connect(self):
         self.game = Game(self)
         self.game.game_init()
@@ -76,7 +31,58 @@ class Server:
         self.game.parse_order(order)
         self.fresh_state()
 
-    def run(self):
+    # communal functions
+    def send_message(self, player, content, type, room="ALL"):
+        message = {
+            "player": player,
+            "content": content,
+            "type": type,
+            "room": room,
+        }
+        self._emit_message(message)
+        return message
+
+    def send_stream(self, player, response, type, room="ALL"):
+        """response须为client回复对象"""
+        message = {
+            "player": player,
+            "type": type,
+            "room": room,
+        }
+        self._emit_message(message, event="message_start")
+        content = ""
+        try:
+            for chunk in response:
+                chunk_content = getattr(chunk.choices[0].delta, "content", None)
+                if chunk_content:
+                    content += chunk_content
+                    self._emit_message({"chunk": chunk_content}, event="message_chunk")
+        except Exception as e:
+            self._emit_message({"error": str(e)}, event="message_error")
+        self._emit_message({}, event="message_end")
+        message["content"] = content
+        return message
+
+    def _emit_message(self, message, event="message"):
+        try:
+            emit(event, message, broadcast=True)
+        except Exception as e:
+            # 可以根据需要记录日志
+            pass
+
+    def fresh_state(self):
+        try:
+            emit(
+                "fresh_state",
+                getattr(self.game, "state", {}),
+                broadcast=True,
+            )
+        except Exception as e:
+            # 可以根据需要记录日志
+            pass
+
+    # run functions
+    def run_debug(self):
         self.socketio.run(self.app, debug=True)
 
 

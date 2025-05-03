@@ -1,6 +1,8 @@
-from config import API_KEY, API_URL, DEFAULT_MODEL
+from email import message
+
 from openai import OpenAI
-from model import Message
+
+from config import API_KEY, API_URL, DEFAULT_MODEL
 
 
 class Player:
@@ -11,65 +13,59 @@ class Player:
         self.client = client
         self.model = model
         self.top_p = p
+        self.reset_history()
+
+    def reset_history(self):
+        """重置玩家的历史记录，清空记忆"""
         self.history = [
             {
                 "role": "system",
-                "content": f"现在，你身处一场狼人杀游戏，你叫{self.name}，身份是{self.role}。",
+                "content": f"你是一个狼人杀玩家，你叫{self.name}，身份是{self.role}.",
             },
         ]
 
-    def listen(self, message: Message):
-        """存储其他玩家消息"""
-        self.history.append(
-            {
-                "role": "user",
-                "name": message["player"],
-                "content": message["content"],
-            },
-        )
+    def listen(self, message):
+        """存储同房间他人和自己的消息，避免重复添加，提升健壮性"""
+        if not message or "player" not in message or "content" not in message:
+            return
+        if message["player"] == self.name:
+            self.history.append(
+                {
+                    "role": "assistant",
+                    "name": message["player"],
+                    "content": message["content"],
+                }
+            )
+        else:
+            self.history.append(
+                {
+                    "role": "user",
+                    "name": message["player"],
+                    "content": message["content"],
+                }
+            )
 
     def act(self, prompt):
-        """执行行动(发言或投票)"""
-        # 添加用户提示到历史记录
-        user_message = {
-            "role": "user",
-            "name": "Judger",
-            "content": prompt,
-        }
-        self.history.append(user_message)
-
-        # 创建流式响应
-        response = self.client.chat.completions.create(
-            model=self.model,
-            messages=self.history,
-            stream=True,
-            top_p=self.top_p,
-        )
-
-        # 处理流式响应
-        full_response = ""
-        if self.manager:
-            # 发送流式响应到服务器
-            for chunk in response:
-                if chunk.choices[0].delta.content:
-                    full_response += chunk.choices[0].delta.content
-                    self.manager.game.server.send_stream(self.name, chunk.choices[0].delta.content, "speech")
-        else:
-            # 本地测试模式
-            for chunk in response:
-                if chunk.choices[0].delta.content:
-                    full_response += chunk.choices[0].delta.content
-
-        # 添加AI响应到历史记录
-        self.history.append({
-            "role": "assistant",
-            "content": full_response,
-        })
-
-
-if __name__ == "__main__":
-    client = OpenAI(api_key=API_KEY, base_url=API_URL)
-    player = Player(None, "Alice", "WEREWOLF", 0.9, client)
-    prompt = "你是狼人还是普通人？"
-    player.act(prompt)
-    print(player.history)
+        """根据思考结果执行行动(发言或投票)(speech)，增加异常处理"""
+        try:
+            response = self.client.chat.completions.create(
+                model=DEFAULT_MODEL,
+                messages=self.history
+                + [
+                    {
+                        "role": "user",
+                        "name": "Judger",
+                        "content": prompt,
+                    },
+                ],
+                stream=True,
+                top_p=self.top_p,
+            )
+            message = self.manager.game.server.send_stream(
+                self.name, response, "speech"
+            )
+            return message
+        except Exception as e:
+            self.manager.game.server.send_message(
+                self.name, f"AI响应异常: {str(e)}", "error"
+            )
