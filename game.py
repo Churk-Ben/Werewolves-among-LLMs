@@ -1,4 +1,5 @@
 from manager import Manager
+from prompts import GAME_PROMPTS, GAME_PHASES
 
 
 class Game:
@@ -6,7 +7,7 @@ class Game:
         self.server = server
         self.manager = Manager(self)
         self.state = {
-            "phase": "欢迎来到狼人杀.",
+            "phase": GAME_PHASES["welcome"],
             "night": 0,
             "players": [],
         }
@@ -18,29 +19,29 @@ class Game:
                 case "auto":
                     self.game_run()
                 case _:
-                    self.server.send_message("系统", f"未知指令: {order}", "thought")
+                    self.server.send_message("系统", GAME_PROMPTS["unknown_command"].format(order), "thought")
         except Exception as e:
             self.server.send_message("系统", f"指令解析异常: {str(e)}", "error")
 
     def game_init(self):
         """初始化游戏, 分配角色. 这会创建新的Player对象, 清空AI玩家的记忆, 增加异常处理"""
         try:
-            self.state["phase"] = "游戏正在初始化..."
+            self.state["phase"] = GAME_PHASES["initializing"]
             result = self.manager.init_players()
             self.state["players"] = result.get("players", [])
             self.state["night"] = 0
             if "error" in result:
-                self.server.send_message("系统", f"玩家初始化异常: {result['error']}", "error")
+                self.server.send_message("系统", GAME_PROMPTS["init_error"].format(result['error']), "error")
         except Exception as e:
-            self.server.send_message("系统", f"游戏初始化异常: {str(e)}", "error")
+            self.server.send_message("系统", GAME_PROMPTS["game_init_error"].format(str(e)), "error")
 
     def game_start(self):
-        self.state["phase"] = "天黑请闭眼."
+        self.state["phase"] = GAME_PHASES["night"]
         self.manager.broadcast_to_player(
             "ALL",
             self.server.send_message(
                 "系统",
-                "天黑请闭眼.",
+                GAME_PROMPTS["night_start"],
                 "speech",
             ),
         )
@@ -63,7 +64,7 @@ class Game:
         try:
             self.state["night"] += 1
             night_number = self.state["night"]
-            self.state["phase"] = f"第{str(night_number)}夜"
+            self.state["phase"] = GAME_PHASES["night"].format(str(night_number))
             self.manager.broadcast_to_player(
                 "ALL",
                 self.server.send_message(
@@ -73,18 +74,18 @@ class Game:
                 ),
             )
         except Exception as e:
-            self.server.send_message("系统", f"夜晚阶段异常: {str(e)}", "error")
+            self.server.send_message("系统", GAME_PROMPTS["night_phase_error"].format(str(e)), "error")
 
     def day_phase(self):
         """白天阶段. 发言, 投票，增加异常处理"""
         try:
-            self.state["phase"] = "天亮了"
+            self.state["phase"] = GAME_PHASES["day"]
             day_number = self.state["night"]
             self.manager.broadcast_to_player(
                 "ALL",
                 self.server.send_message(
                     "系统",
-                    f"现在是第{day_number}天，白天阶段开始。",
+                    GAME_PROMPTS["day_start"].format(day_number),
                     "speech",
                 ),
             )
@@ -95,22 +96,22 @@ class Game:
             for player in alive_players:
                 self.manager.let_player_act(
                     player,
-                    "白天阶段，请发言。",
+                    GAME_PROMPTS["day_phase"],
                 )
             self.vote_phase()
         except Exception as e:
-            self.server.send_message("系统", f"白天阶段异常: {str(e)}", "error")
+            self.server.send_message("系统", GAME_PROMPTS["day_phase_error"].format(str(e)), "error")
 
     def vote_phase(self):
         """投票阶段，增加异常处理"""
         try:
-            self.state["phase"] = "投票阶段"
+            self.state["phase"] = GAME_PHASES["vote"]
             day_number = self.state["night"]
             alive_players = []
             for player in self.manager.players_state:
                 if player["alive"]:
                     alive_players.append(player["name"])
-            vote_message = f"现在是第{day_number}天投票环节，存活玩家: {', '.join(alive_players)}。请投票."
+            vote_message = GAME_PROMPTS["vote_phase"].format(day_number, ', '.join(alive_players))
             self.manager.broadcast_to_player(
                 "ALL",
                 self.server.send_message(
@@ -121,7 +122,7 @@ class Game:
             )
             self.check_game_end()
         except Exception as e:
-            self.server.send_message("系统", f"投票阶段异常: {str(e)}", "error")
+            self.server.send_message("系统", GAME_PROMPTS["vote_phase_error"].format(str(e)), "error")
 
     def check_game_end(self):
         """检查游戏是否结束，增加异常处理"""
@@ -135,11 +136,11 @@ class Game:
                     else:
                         alive_villagers += 1
             if alive_werewolves == 0:
-                end_message = "游戏结束！所有狼人都已出局，好人阵营胜利！"
-                self.state["phase"] = "游戏结束 - 好人胜利"
+                end_message = GAME_PROMPTS["villagers_win"]
+                self.state["phase"] = GAME_PHASES["villagers_win"]
             elif alive_werewolves >= alive_villagers:
-                end_message = "游戏结束！狼人数量已经大于等于好人数量，狼人阵营胜利！"
-                self.state["phase"] = "游戏结束 - 狼人胜利"
+                end_message = GAME_PROMPTS["werewolves_win"]
+                self.state["phase"] = GAME_PHASES["werewolves_win"]
             else:
                 return
             self.manager.broadcast_to_player(
@@ -151,7 +152,7 @@ class Game:
                 ),
             )
         except Exception as e:
-            self.server.send_message("系统", f"结算阶段异常: {str(e)}", "error")
+            self.server.send_message("系统", GAME_PROMPTS["game_end_error"].format(str(e)), "error")
 
     def game_run(self):
         """游戏主循环，增加异常处理"""
@@ -167,4 +168,4 @@ class Game:
                 ):
                     break
         except Exception as e:
-            self.server.send_message("系统", f"主循环异常: {str(e)}", "error")
+            self.server.send_message("系统", GAME_PROMPTS["main_loop_error"].format(str(e)), "error")
