@@ -1,4 +1,5 @@
 from manager import Manager
+from model import Message
 
 
 class Game:
@@ -30,7 +31,9 @@ class Game:
             self.state["players"] = result.get("players", [])
             self.state["night"] = 0
             if "error" in result:
-                self.server.send_message("系统", f"玩家初始化异常: {result['error']}", "error")
+                self.server.send_message(
+                    "系统", f"玩家初始化异常: {result['error']}", "error"
+                )
         except Exception as e:
             self.server.send_message("系统", f"游戏初始化异常: {str(e)}", "error")
 
