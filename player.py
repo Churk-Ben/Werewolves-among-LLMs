@@ -1,7 +1,4 @@
-from email import message
-
 from openai import OpenAI
-
 from config import API_KEY, API_URL, DEFAULT_MODEL
 
 
