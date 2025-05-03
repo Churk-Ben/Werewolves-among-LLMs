@@ -126,7 +126,12 @@ document.addEventListener("DOMContentLoaded", () => {
         playersList.innerHTML = "";
         state.players.forEach((player) => {
             const li = document.createElement("li");
+            li.classList.add("player-card");
 
+            // 创建玩家基本信息容器
+            const playerBasicInfo = document.createElement("div");
+            playerBasicInfo.classList.add("player-basic-info");
+            
             // 设置基础文本内容
             let displayText = player.name;
 
@@ -135,7 +140,41 @@ document.addEventListener("DOMContentLoaded", () => {
                 displayText += ` (被投票数: ${player.voted})`;
             }
 
-            li.textContent = displayText;
+            playerBasicInfo.textContent = displayText;
+            
+            // 创建展开/折叠按钮
+            const expandButton = document.createElement("span");
+            expandButton.classList.add("expand-button");
+            expandButton.textContent = "+";
+            playerBasicInfo.appendChild(expandButton);
+            
+            // 创建详细信息容器
+            const playerDetails = document.createElement("div");
+            playerDetails.classList.add("player-details");
+            playerDetails.style.display = "none";
+            
+            // 添加详细信息
+            playerDetails.innerHTML = `
+                <div>角色: ${player.role}</div>
+                <div>存活: ${player.alive ? "是" : "否"}</div>
+                <div>top_p值: ${player.p}</div>
+            `;
+            
+            // 添加展开/折叠功能
+            expandButton.addEventListener("click", (e) => {
+                e.stopPropagation();
+                if (playerDetails.style.display === "none") {
+                    playerDetails.style.display = "block";
+                    expandButton.textContent = "-";
+                } else {
+                    playerDetails.style.display = "none";
+                    expandButton.textContent = "+";
+                }
+            });
+            
+            // 将基本信息和详细信息添加到列表项
+            li.appendChild(playerBasicInfo);
+            li.appendChild(playerDetails);
 
             // 根据角色添加样式
             if (player.role === "VILLAGER") {

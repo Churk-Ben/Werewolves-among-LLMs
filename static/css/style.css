@@ -158,6 +158,43 @@ body {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
+/* 玩家卡片样式 */
+.player-card {
+    cursor: pointer;
+}
+
+.player-basic-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.expand-button {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    line-height: 18px;
+    text-align: center;
+    border-radius: 50%;
+    background-color: #e0e0e0;
+    color: #333;
+    font-weight: bold;
+    cursor: pointer;
+    user-select: none;
+}
+
+.player-details {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px dashed #e0e0e0;
+    font-size: 0.9em;
+    color: #666;
+}
+
+.player-details div {
+    margin-bottom: 4px;
+}
+
 /* 角色样式 */
 .player-list li.villager {
     border-left: 4px solid var(--villager-color);
@@ -190,6 +227,7 @@ body {
         opacity: 0;
         transform: translateY(10px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
