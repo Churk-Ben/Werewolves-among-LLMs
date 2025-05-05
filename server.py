@@ -30,17 +30,24 @@ class Server:
         order = data["content"]
         self.game.parse_order(order)
         self.fresh_state()
-        
+
     def get_player_history(self):
         """获取所有玩家的历史记忆并发送到前端"""
         try:
-            if hasattr(self, 'game') and hasattr(self.game, 'manager'):
+            if hasattr(self, "game") and hasattr(self.game, "manager"):
                 players_history = {}
                 for player in self.game.manager.players_object:
                     players_history[player.name] = player.history
                 emit("player_history", players_history)  # 发送玩家历史记忆到前端
         except Exception as e:
-            emit("message", {"player": "系统", "content": f"获取玩家历史记忆失败: {str(e)}", "type": "error"})
+            emit(
+                "message",
+                {
+                    "player": "系统",
+                    "content": f"获取玩家历史记忆失败: {str(e)}",
+                    "type": "error",
+                },
+            )
 
     # communal functions
     def send_message(self, player, content, type, room="ALL"):

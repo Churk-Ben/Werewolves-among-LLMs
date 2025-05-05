@@ -35,7 +35,11 @@ document.addEventListener("DOMContentLoaded", () => {
     // 在界面上显示提示信息
     const messageElement = document.createElement("div");
     messageElement.classList.add("message");
-    messageElement.classList.add("system");
+    messageElement.classList.add("thought");
+
+    const playerName = document.createElement("strong");
+    playerName.textContent = "系统 : ";
+    messageElement.appendChild(playerName);
 
     const messageContent = document.createElement("span");
     messageContent.textContent =
