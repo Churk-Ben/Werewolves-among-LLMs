@@ -118,9 +118,25 @@ body {
     background-color: #1565c0;
 }
 
-#send-button:disabled {
+#send-button:disabled,
+#history-button:disabled {
     background-color: #bdbdbd;
     cursor: not-allowed;
+}
+
+#history-button {
+    padding: 10px 16px;
+    background-color: #1976d2;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-left: 5px;
+}
+
+#history-button:hover {
+    background-color: #1565c0;
 }
 
 .player-list {

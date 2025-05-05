@@ -4,7 +4,7 @@ GAME_PROMPTS = {
     "welcome": "欢迎来到狼人杀.",
     "initializing": "游戏正在初始化...",
     # 游戏阶段提示
-    "night_start": "天黑请闭眨.",
+    "night_start": "天黑请闭眼.",
     "day_start": "天亮了.",
     "day_phase": "白天阶段, 请发言.",
     "vote_phase": "投票环节, 请投票.",
