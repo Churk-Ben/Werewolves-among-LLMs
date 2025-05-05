@@ -5,11 +5,55 @@ document.addEventListener("DOMContentLoaded", () => {
     const sendButton = document.getElementById("send-button");
     const playersList = document.getElementById("players");
     const gamePhase = document.getElementById("game-phase");
+    
+    // 添加查看玩家历史记忆的按钮
+    const historyButton = document.createElement("button");
+    historyButton.id = "history-button";
+    historyButton.textContent = "查看玩家记忆";
+    historyButton.style.marginLeft = "10px";
+    historyButton.style.backgroundColor = "#1976d2";
+    historyButton.style.color = "white";
+    historyButton.style.border = "none";
+    historyButton.style.padding = "8px 16px";
+    historyButton.style.borderRadius = "8px";
+    historyButton.style.cursor = "pointer";
+    document.querySelector(".chat-input").appendChild(historyButton);
 
     // 连接成功后启用输入
     socket.on("connect", () => {
         messageInput.disabled = false;
         sendButton.disabled = false;
+        historyButton.disabled = false;
+    });
+    
+    // 绑定查看历史记忆按钮点击事件
+    historyButton.addEventListener("click", () => {
+        socket.emit("get_player_history");
+    });
+    
+    // 处理接收到的玩家历史记忆
+    socket.on("player_history", (playersHistory) => {
+        console.log("玩家历史记忆:", playersHistory);
+        
+        // 遍历每个玩家的历史记忆并输出到控制台
+        for (const playerName in playersHistory) {
+            console.group(`玩家 ${playerName} 的历史记忆:`);
+            playersHistory[playerName].forEach((message, index) => {
+                console.log(`消息 ${index + 1}:`, message);
+            });
+            console.groupEnd();
+        }
+        
+        // 在界面上显示提示信息
+        const messageElement = document.createElement("div");
+        messageElement.classList.add("message");
+        messageElement.classList.add("system");
+        
+        const messageContent = document.createElement("span");
+        messageContent.textContent = "已将所有玩家的历史记忆输出到控制台，请按F12打开开发者工具查看";
+        messageElement.appendChild(messageContent);
+        messagesDiv.appendChild(messageElement);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
     });
 
     // 绑定发送按钮点击事件
