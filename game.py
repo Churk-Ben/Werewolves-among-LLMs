@@ -56,8 +56,8 @@ class Game:
             "ALL",
             self.server.send_message(
                 "系统",
-                f"玩家列表: {', '.join([player['name'] for player in self.state['players']])}\n"
-                + f"已分配身份: {', '.join([player['role'] for player in self.state['players']])}",
+                f"本场玩家列表: {', '.join([player['name'] for player in self.state['players']])}\n"
+                + f"本场已分配身份: {', '.join([player['role'] for player in self.state['players']])}",
                 "speech",
             ),
         )
