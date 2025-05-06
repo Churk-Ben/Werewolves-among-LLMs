@@ -1,5 +1,5 @@
 from manager import Manager
-from prompts import GAME_PROMPTS, GAME_PHASES
+from prompts import GAME_PROMPTS, GAME_PHASES, PLAYER_PROMPTS
 
 
 class Game:
@@ -23,7 +23,7 @@ class Game:
                         "系统", GAME_PROMPTS["unknown_command"].format(order), "thought"
                     )
         except Exception as e:
-            self.server.send_message("系统", f"指令解析异常: {str(e)}", "error")
+            self.server.send_message("系统", GAME_PROMPTS["parse_order_error"].format(str(e)), "error")
 
     def game_init(self):
         """初始化游戏, 分配角色. 这会创建新的Player对象, 清空AI玩家的记忆, 增加异常处理"""
@@ -56,8 +56,8 @@ class Game:
             "ALL",
             self.server.send_message(
                 "系统",
-                f"本场玩家列表: {', '.join([player['name'] for player in self.state['players']])}\n"
-                + f"本场已分配身份: {', '.join([player['role'] for player in self.state['players']])}",
+                GAME_PROMPTS["player_list"].format(', '.join([player['name'] for player in self.state['players']])) + "\n" +
+                GAME_PROMPTS["role_list"].format(', '.join([player['role'] for player in self.state['players']])),
                 "speech",
             ),
         )
@@ -67,7 +67,7 @@ class Game:
             if player["role"] == "WEREWOLF":
                 werewolfs.append(player["name"])
         if werewolfs:
-            werewolf_info = f"本场狼人是: {', '.join(werewolfs)}."
+            werewolf_info = GAME_PROMPTS["werewolf_info"].format(', '.join(werewolfs))
             self.manager.broadcast_to_player(
                 "WEREWOLF",
                 werewolf_info,
@@ -85,7 +85,7 @@ class Game:
                 "ALL",
                 self.server.send_message(
                     "系统",
-                    "@death_message",
+                    PLAYER_PROMPTS["death_message"],
                     "speech",
                 ),
             )

@@ -1,5 +1,6 @@
 from openai import OpenAI
 from config import API_KEY, API_URL, DEFAULT_MODEL
+from prompts import PLAYER_PROMPTS, GAME_PROMPTS
 
 
 class Player:
@@ -13,11 +14,7 @@ class Player:
 
     def reset_history(self):
         """重置玩家的历史记录，清空记忆"""
-        initial_message = (
-            f"你是一个狼人杀玩家，你叫{self.name}，身份是{self.role}."
-            + "在白天来临前,你没见过任何其他玩家.在接下来的游戏中,请不要在计划外暴露自己的身份."
-            + "你的输出只包含对话和**你想要展示给所有人**的动作.注意伪装."
-        )
+        initial_message = PLAYER_PROMPTS["initial_message"].format(self.name, self.role)
         self.history = [
             {
                 "role": "system",
@@ -68,5 +65,5 @@ class Player:
             return message
         except Exception as e:
             self.manager.game.server.send_message(
-                self.name, f"AI响应异常: {str(e)}", "error"
+                self.name, GAME_PROMPTS["ai_response_error"].format(str(e)), "error"
             )

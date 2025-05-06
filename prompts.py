@@ -20,6 +20,12 @@ GAME_PROMPTS = {
     "vote_phase_error": "投票阶段异常: {}",
     "game_end_error": "结算阶段异常: {}",
     "main_loop_error": "主循环异常: {}",
+    # 游戏信息提示
+    "player_list": "本场玩家列表: {}",
+    "role_list": "本场已分配身份: {}",
+    "werewolf_info": "本场狼人是: {}.",
+    "ai_response_error": "AI响应异常: {}",
+    "parse_order_error": "指令解析异常: {}",
 }
 
 # 游戏状态提示词配置
@@ -34,3 +40,10 @@ GAME_PHASES = {
 }
 
 # 角色提示词配置
+PLAYER_PROMPTS = {
+    # 玩家初始化提示
+    "initial_message": "你是一个狼人杀玩家，你叫{}，身份是{}."
+                      "在白天来临前,你没见过任何其他玩家.在接下来的游戏中,请不要在计划外暴露自己的身份."
+                      "你的输出只包含对话和**你想要展示给所有人**的动作.注意伪装.",
+    "death_message": "@death_message",
+}

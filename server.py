@@ -38,7 +38,7 @@ class Server:
                 players_history = {}
                 for player in self.game.manager.players_object:
                     players_history[player.name] = player.history
-                emit("player_history", players_history)  # 发送玩家历史记忆到前端
+                emit("player_history", players_history)
         except Exception as e:
             emit(
                 "message",
