@@ -100,14 +100,206 @@ class Game:
             self.state["night"] += 1
             night_number = self.state["night"]
             self.state["phase"] = GAME_PHASES["night"].format(str(night_number))
+            
+            # 通知所有玩家进入夜晚阶段
             self.manager.broadcast_to_player(
                 "ALL",
                 self.server.send_message(
                     "系统",
-                    PLAYER_PROMPTS["death_message"],
+                    GAME_PROMPTS["night_start"],
                     "speech",
                 ),
             )
+            
+            # 获取存活玩家列表
+            alive_players = []
+            for player in self.state["players"]:
+                if player["alive"]:
+                    alive_players.append(player["name"])
+            
+            # 狼人行动阶段
+            werewolf_prompt = GAME_PROMPTS.get("werewolf_action", "狼人请睁眼，请选择你要击杀的对象: {}").format(
+                ", ".join(alive_players)
+            )
+            self.manager.broadcast_to_player(
+                "WEREWOLF",
+                self.server.send_message(
+                    "系统",
+                    werewolf_prompt,
+                    "speech",
+                ),
+            )
+            
+            # 让狼人进行选择
+            werewolf_target = None
+            for player in self.state["players"]:
+                if player["role"] == "WEREWOLF" and player["alive"]:
+                    response = self.manager.let_player_act(
+                        player["name"],
+                        werewolf_prompt
+                    )
+                    # 解析狼人的选择
+                    player_obj = next((p for p in self.manager.players_object if p.name == player["name"]), None)
+                    if player_obj and response and "content" in response:
+                        target = player_obj.parse_action(response["content"], 'kill')
+                        if target and target in alive_players:
+                            werewolf_target = target
+                            break
+                    
+                    # 如果没有成功解析到目标，默认选择一个非狼人玩家
+                    if not werewolf_target:
+                        for target in alive_players:
+                            target_role = next((p["role"] for p in self.state["players"] if p["name"] == target), None)
+                            if target_role != "WEREWOLF":
+                                werewolf_target = target
+                                break
+            
+            # 预言家行动阶段
+            seer_prompt = GAME_PROMPTS.get("seer_action", "预言家请睁眼，请选择你要查验的对象: {}").format(
+                ", ".join(alive_players)
+            )
+            self.manager.broadcast_to_player(
+                "SEER",
+                self.server.send_message(
+                    "系统",
+                    seer_prompt,
+                    "speech",
+                ),
+            )
+            
+            # 让预言家进行选择
+            for player in self.state["players"]:
+                if player["role"] == "SEER" and player["alive"]:
+                    response = self.manager.let_player_act(
+                        player["name"],
+                        seer_prompt
+                    )
+                    # 解析预言家的选择
+                    player_obj = next((p for p in self.manager.players_object if p.name == player["name"]), None)
+                    seer_target = None
+                    
+                    if player_obj and response and "content" in response:
+                        target = player_obj.parse_action(response["content"], 'check')
+                        if target and target in alive_players:
+                            seer_target = target
+                    
+                    # 如果没有成功解析到目标，默认选择第一个玩家
+                    if not seer_target and alive_players:
+                        seer_target = alive_players[0]
+                        
+                    if seer_target:
+                        target_role = next((p["role"] for p in self.state["players"] if p["name"] == seer_target), None)
+                        is_werewolf = "是" if target_role == "WEREWOLF" else "不是"
+                        seer_result = GAME_PROMPTS.get("seer_result", "你查验的玩家 {} {}狼人").format(
+                            seer_target, is_werewolf
+                        )
+                        self.manager.broadcast_to_player(
+                            "SEER",
+                            self.server.send_message(
+                                "系统",
+                                seer_result,
+                                "speech",
+                            ),
+                        )
+            
+            # 女巫行动阶段
+            witch_prompt = GAME_PROMPTS.get("witch_action", "女巫请睁眼，今晚 {} 玩家被杀，你要使用解药救他吗？或者使用毒药杀死其他人？").format(
+                werewolf_target if werewolf_target else "没有"
+            )
+            self.manager.broadcast_to_player(
+                "WITCH",
+                self.server.send_message(
+                    "系统",
+                    witch_prompt,
+                    "speech",
+                ),
+            )
+            
+            # 让女巫进行选择
+            witch_heal_target = None
+            witch_poison_target = None
+            
+            for player in self.state["players"]:
+                if player["role"] == "WITCH" and player["alive"]:
+                    response = self.manager.let_player_act(
+                        player["name"],
+                        witch_prompt
+                    )
+                    # 解析女巫的选择
+                    player_obj = next((p for p in self.manager.players_object if p.name == player["name"]), None)
+                    
+                    if player_obj and response and "content" in response:
+                        # 检查是否使用解药
+                        if player_obj.has_heal:
+                            heal_target = player_obj.parse_action(response["content"], 'heal')
+                            if heal_target and heal_target in [werewolf_target]:  # 只能救被狼人杀的人
+                                witch_heal_target = heal_target
+                                
+                        # 检查是否使用毒药
+                        if player_obj.has_poison:
+                            poison_target = player_obj.parse_action(response["content"], 'poison')
+                            if poison_target and poison_target in alive_players:
+                                witch_poison_target = poison_target
+                    
+                    # 通知女巫使用结果
+                    result_message = ""
+                    if witch_heal_target:
+                        result_message += f"你成功使用解药救活了 {witch_heal_target}。"
+                    if witch_poison_target:
+                        result_message += f"你成功使用毒药毒死了 {witch_poison_target}。"
+                    if result_message:
+                        self.manager.broadcast_to_player(
+                            "WITCH",
+                            self.server.send_message(
+                                "系统",
+                                result_message,
+                                "speech",
+                            ),
+                        )
+            
+            # 处理夜晚结果
+            death_players = []
+            
+            # 处理狼人击杀
+            if werewolf_target and witch_heal_target != werewolf_target:
+                # 如果狼人击杀了目标且女巫没有救人
+                death_players.append(werewolf_target)
+            
+            # 处理女巫毒药
+            if witch_poison_target:
+                death_players.append(witch_poison_target)
+            
+            # 更新被杀玩家状态
+            for death_player in death_players:
+                for player in self.state["players"]:
+                    if player["name"] == death_player:
+                        player["alive"] = False
+                        break
+            
+            # 通知所有玩家夜晚结果
+            if death_players:
+                death_message = GAME_PROMPTS.get("night_result", "天亮了，昨晚 {} 玩家被杀").format(
+                    "、".join(death_players)
+                )
+                self.manager.broadcast_to_player(
+                    "ALL",
+                    self.server.send_message(
+                        "系统",
+                        death_message,
+                        "speech",
+                    ),
+                )
+            else:
+                # 如果没有人被杀（平安夜）
+                no_death_message = GAME_PROMPTS.get("no_death", "天亮了，昨晚是平安夜，没有人被杀")
+                self.manager.broadcast_to_player(
+                    "ALL",
+                    self.server.send_message(
+                        "系统",
+                        no_death_message,
+                        "speech",
+                    ),
+                )
         except Exception as e:
             self.server.send_message(
                 "系统", GAME_PROMPTS["night_phase_error"].format(str(e)), "error"
