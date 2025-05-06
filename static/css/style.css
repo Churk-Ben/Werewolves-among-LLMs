@@ -1,11 +1,40 @@
 :root {
+    /* Role Colors */
     --villager-color: #3e3e3e;
     --werewolf-color: #d32f2f;
     --seer-color: #1292cd;
     --witch-color: #c91ce4;
     --hunter-color: #ffc107;
 
+    /* General Colors */
     --background-color: #f0f2f5;
+    --white: #ffffff;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+    --border-color: #e0e0e0;
+    --text-primary: #333333;
+    --text-secondary: #666666;
+
+    /* Message Colors */
+    --thought-bg: var(--background-color);
+    --thought-text: var(--text-secondary);
+    --speech-bg: #e3f2fd;
+    --speech-text: #1976d2;
+    --error-bg: #ffebee;
+    --error-text: #b71c1c;
+
+    /* Button Colors */
+    --button-bg: var(--speech-text);
+    --button-text: var(--white);
+    --button-hover-bg: #1565c0;
+    --button-disabled-bg: #bdbdbd;
+
+    /* Player List Colors */
+    --player-list-bg: #fafafa;
+    --player-card-bg: var(--white);
+    --expand-button-bg: var(--border-color);
+    --expand-button-text: var(--text-primary);
+    --player-details-border: var(--border-color);
+    --player-details-text: var(--text-secondary);
 }
 
 * {
@@ -17,7 +46,7 @@
 
 body {
     font-family: 'Microsoft YaHei', sans-serif;
-    background-color: #f0f2f5;
+    background-color: var(--background-color);
     height: 100vh;
     display: flex;
     justify-content: center;
@@ -29,34 +58,34 @@ body {
     width: 90%;
     max-width: 1200px;
     height: 80vh;
-    background: white;
+    background: var(--white);
     border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 10px var(--shadow-color);
 }
 
 .chat-container {
     flex: 1;
     display: flex;
     flex-direction: column;
-    border-right: 1px solid #e0e0e0;
+    border-right: 1px solid var(--border-color);
 }
 
 .chat-header {
     padding: 20px;
-    border-bottom: 1px solid #e0e0e0;
-    background-color: #fff;
+    border-bottom: 1px solid var(--border-color);
+    background-color: var(--white);
     border-radius: 12px 0 0 0;
 }
 
 .chat-header h1 {
     font-size: 24px;
-    color: #333;
+    color: var(--text-primary);
     margin-bottom: 10px;
 }
 
 .game-status {
     font-size: 14px;
-    color: #666;
+    color: var(--text-secondary);
 }
 
 .chat-messages {
@@ -74,24 +103,24 @@ body {
 }
 
 .message.thought {
-    background-color: #f0f2f5;
-    color: #666;
-    font-style: italic;
+    background-color: var(--thought-bg);
+    color: var(--thought-text);
+    font-weight: lighter;
 }
 
 .message.speech {
-    background-color: #e3f2fd;
-    color: #1976d2;
+    background-color: var(--speech-bg);
+    color: var(--speech-text);
 }
 
 .message.error {
-    background-color: #ffebee;
-    color: #b71c1c;
+    background-color: var(--error-bg);
+    color: var(--error-text);
 }
 
 .chat-input {
     padding: 20px;
-    border-top: 1px solid #e0e0e0;
+    border-top: 1px solid var(--border-color);
     display: flex;
     gap: 10px;
 }
@@ -99,70 +128,67 @@ body {
 #message-input {
     flex: 1;
     padding: 10px;
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--border-color);
     border-radius: 8px;
     font-size: 14px;
 }
 
-#send-button {
+#send-button,
+#history-button {
     padding: 10px 20px;
-    background-color: #1976d2;
-    color: white;
+    background-color: var(--button-bg);
+    color: var(--button-text);
     border: none;
     border-radius: 8px;
     cursor: pointer;
     transition: background-color 0.3s;
 }
 
-#send-button:hover {
-    background-color: #1565c0;
+#send-button:hover,
+#history-button:hover {
+    background-color: var(--button-hover-bg);
 }
 
 #send-button:disabled,
 #history-button:disabled {
-    background-color: #bdbdbd;
+    background-color: var(--button-disabled-bg);
     cursor: not-allowed;
-}
-
-#history-button {
-    padding: 10px 16px;
-    background-color: #1976d2;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-    margin-left: 5px;
-}
-
-#history-button:hover {
-    background-color: #1565c0;
 }
 
 .player-list {
     width: 250px;
     padding: 20px;
-    background-color: #fafafa;
+    background-color: var(--player-list-bg);
     border-radius: 0 12px 12px 0;
     overflow-y: auto;
     /* 确保玩家列表始终有一个固定的背景色，不受游戏阶段背景色变化影响 */
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 10px var(--shadow-color);
     /* 确保玩家列表在所有游戏阶段都保持一致的背景色 */
     position: relative;
     z-index: 1;
     /* 保持玩家列表的背景色不变，即使在夜晚或游戏结束阶段 */
-    color: #333;
+    color: var(--text-primary);
+
+    /* Hide scrollbar for IE, Edge and Firefox */
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.player-list::-webkit-scrollbar {
+    display: none;
 }
 
 .player-list h2 {
     margin-bottom: 15px;
-    color: #333;
+    color: var(--text-primary);
 }
 
 .player-list ul {
     list-style: none;
     padding: 0;
-    /* 确保列表项有足够的间距 */
     margin: 0;
 }
 
@@ -170,8 +196,8 @@ body {
     padding: 10px;
     margin-bottom: 5px;
     border-radius: 4px;
-    background-color: #fff;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    background-color: var(--player-card-bg);
+    box-shadow: 0 1px 3px var(--shadow-color);
 }
 
 /* 玩家卡片样式 */
@@ -192,8 +218,8 @@ body {
     line-height: 18px;
     text-align: center;
     border-radius: 50%;
-    background-color: #e0e0e0;
-    color: #333;
+    background-color: var(--expand-button-bg);
+    color: var(--expand-button-text);
     font-weight: bold;
     cursor: pointer;
     user-select: none;
@@ -202,9 +228,9 @@ body {
 .player-details {
     margin-top: 8px;
     padding-top: 8px;
-    border-top: 1px dashed #e0e0e0;
+    border-top: 1px dashed var(--player-details-border);
     font-size: 0.9em;
-    color: #666;
+    color: var(--player-details-text);
 }
 
 .player-details div {
