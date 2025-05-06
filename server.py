@@ -4,12 +4,12 @@ from game import Game
 
 
 class Server:
-    def __init__(self, host="0.0.0.0", port=5000):
+    def __init__(self, host="0.0.0.0", port=12000):
         self.host = host
         self.port = port
         self.app = Flask(__name__)
         self.app.config["SECRET_KEY"] = "secret"
-        self.socketio = SocketIO(self.app)
+        self.socketio = SocketIO(self.app, cors_allowed_origins="*")
         self.bind()
 
     def bind(self):
@@ -101,10 +101,10 @@ class Server:
 
     # run functions
     def run_debug(self):
-        self.socketio.run(self.app, debug=True)
+        self.socketio.run(self.app, host=self.host, port=self.port, debug=True, allow_unsafe_werkzeug=True)
 
     def run(self):
-        self.socketio.run(self.app, host=self.host, port=self.port)
+        self.socketio.run(self.app, host=self.host, port=self.port, allow_unsafe_werkzeug=True)
 
 
 if __name__ == "__main__":

@@ -33,7 +33,7 @@ A Python-based Werewolf game implementation with AI players.
    安装依赖
 
    ```bash
-   pip install -r about/requirements.txt
+   pip install -r requirements.txt
    ```
 
 3. Create .env file with your API key  
@@ -52,8 +52,8 @@ To start the game server:
 python server.py
 ```
 
-Then open `http://localhost:5000` in your browser.  
-然后在浏览器中打开 `http://localhost:5000`
+Then open `http://localhost:12000` in your browser.  
+然后在浏览器中打开 `http://localhost:12000`
 
 ## Game Flow / 游戏流程
 
@@ -83,3 +83,17 @@ Then open `http://localhost:5000` in your browser.
 ## License / 许可证
 
 [MIT License]
+
+## Updates / 更新
+
+- May 2025: Updated all dependencies to their latest versions / 2025年5月：更新所有依赖至最新版本
+  - Flask 3.1.0
+  - Flask-SocketIO 5.5.1
+  - python-socketio 5.13.0
+  - python-engineio 4.12.0
+  - Werkzeug 3.1.3
+  - bidict 0.23.1
+  - openai 1.77.0
+  - python-dotenv 1.1.0
+- Added CORS support / 添加CORS支持
+- Configured server to run on port 12000 / 配置服务器在12000端口运行
