@@ -14,6 +14,8 @@ GAME_PROMPTS = {
     # 错误提示
     "unknown_command": "未知指令: {}",
     "init_error": "玩家初始化异常: {}",
+    "ai_response_error": "AI响应异常: {}",
+    "parse_order_error": "指令解析异常: {}",
     "game_init_error": "游戏初始化异常: {}",
     "night_phase_error": "夜晚阶段异常: {}",
     "day_phase_error": "白天阶段异常: {}",
@@ -23,9 +25,7 @@ GAME_PROMPTS = {
     # 游戏信息提示
     "player_list": "本场玩家列表: {}",
     "role_list": "本场已分配身份: {}",
-    "werewolf_info": "本场狼人是: {}.",
-    "ai_response_error": "AI响应异常: {}",
-    "parse_order_error": "指令解析异常: {}",
+    "werewolf_list": "本场狼人是: {}.",
 }
 
 # 游戏状态提示词配置

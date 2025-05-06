@@ -14,7 +14,7 @@ class Game:
 
     def parse_order(self, order):
         """
-        处理游戏指令并分发给对应角色, 增加异常处理
+        处理游戏指令并分发给对应角色
         """
 
         try:
@@ -32,7 +32,8 @@ class Game:
 
     def game_init(self):
         """
-        初始化游戏, 分配角色. 这会创建新的Player对象, 清空AI玩家的记忆, 增加异常处理
+        初始化游戏, 分配角色.
+        创建新的Player对象, 清空AI玩家的记忆
         """
 
         try:
@@ -51,7 +52,7 @@ class Game:
 
     def game_start(self):
         """
-        开始游戏, 通知所有玩家游戏开始, 增加异常处理
+        开始游戏, 通知所有玩家游戏开始
         """
 
         self.state["phase"] = GAME_PHASES["night"]
@@ -84,15 +85,15 @@ class Game:
             if player["role"] == "WEREWOLF":
                 werewolfs.append(player["name"])
         if werewolfs:
-            werewolf_info = GAME_PROMPTS["werewolf_info"].format(", ".join(werewolfs))
+            werewolfs = GAME_PROMPTS["werewolf_list"].format(", ".join(werewolfs))
             self.manager.broadcast_to_player(
                 "WEREWOLF",
-                werewolf_info,
+                werewolfs,
             )
 
     def night_phase(self):
         """
-        夜晚阶段. 狼人行动, 预言家行动, 女巫行动，增加异常处理
+        夜晚阶段. 狼人行动, 预言家行动, 女巫行动
         """
 
         try:
@@ -114,7 +115,7 @@ class Game:
 
     def day_phase(self):
         """
-        白天阶段. 发言, 投票，增加异常处理
+        白天阶段. 发言, 投票
         """
 
         try:
@@ -145,7 +146,7 @@ class Game:
 
     def vote_phase(self):
         """
-        投票阶段，增加异常处理
+        投票阶段
         """
 
         try:
@@ -174,7 +175,7 @@ class Game:
 
     def check_game_end(self):
         """
-        检查游戏是否结束，增加异常处理
+        检查游戏是否结束
         """
 
         try:
@@ -209,7 +210,7 @@ class Game:
 
     def game_run(self):
         """
-        游戏主循环，增加异常处理
+        游戏主循环
         """
 
         try:

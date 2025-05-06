@@ -161,12 +161,10 @@ body {
     background-color: var(--player-list-bg);
     border-radius: 0 12px 12px 0;
     overflow-y: auto;
-    /* 确保玩家列表始终有一个固定的背景色，不受游戏阶段背景色变化影响 */
+    /* 确保玩家列表背景色在所有游戏阶段保持不变 */
     box-shadow: 0 2px 10px var(--shadow-color);
-    /* 确保玩家列表在所有游戏阶段都保持一致的背景色 */
     position: relative;
     z-index: 1;
-    /* 保持玩家列表的背景色不变，即使在夜晚或游戏结束阶段 */
     color: var(--text-primary);
 
     /* Hide scrollbar for IE, Edge and Firefox */
