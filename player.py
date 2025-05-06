@@ -89,6 +89,8 @@ class Player:
                     role_specific_prompt += "\n如果不使用任何药水，请回复：'我选择不使用任何药水'"
                 else:
                     role_specific_prompt += "\n你已经没有任何药水了，请回复：'我没有药水可以使用'"
+            elif "投票环节" in prompt:
+                role_specific_prompt += "\n请明确指出你要投票的玩家名字，格式为：'我投票给 [玩家名]'"
             
             response = self.client.chat.completions.create(
                 model=DEFAULT_MODEL,
@@ -116,36 +118,49 @@ class Player:
         """
         解析玩家的行动
         
-        action_type: 'kill', 'check', 'heal', 'poison'
+        action_type: 'kill', 'check', 'heal', 'poison', 'vote'
         """
         if not response_text:
             return None
+        
+        import re
             
         if action_type == 'kill' and '击杀' in response_text:
             # 解析狼人击杀目标
-            import re
             match = re.search(r'击杀\s*([A-Za-z]+)', response_text)
             if match:
                 return match.group(1)
         elif action_type == 'check' and '查验' in response_text:
             # 解析预言家查验目标
-            import re
             match = re.search(r'查验\s*([A-Za-z]+)', response_text)
             if match:
                 return match.group(1)
         elif action_type == 'heal' and '解药' in response_text and '救' in response_text:
             # 解析女巫救人目标
-            import re
             match = re.search(r'救\s*([A-Za-z]+)', response_text)
             if match:
                 self.has_heal = False  # 使用解药
                 return match.group(1)
         elif action_type == 'poison' and '毒药' in response_text and '毒死' in response_text:
             # 解析女巫毒人目标
-            import re
             match = re.search(r'毒死\s*([A-Za-z]+)', response_text)
             if match:
                 self.has_poison = False  # 使用毒药
                 return match.group(1)
+        elif action_type == 'vote':
+            # 解析投票目标
+            # 尝试多种可能的投票表达方式
+            vote_patterns = [
+                r'投票(?:给|选择|选|投)\s*([A-Za-z]+)',
+                r'我(?:投|选择|选|投票给)\s*([A-Za-z]+)',
+                r'(?:投|选择|选|投票给)\s*([A-Za-z]+)',
+                r'(?:我要|我想|我决定)(?:投票|投|选择|选)(?:给)?\s*([A-Za-z]+)',
+                r'(?:我的|我)(?:选择|投票)(?:是)?\s*([A-Za-z]+)'
+            ]
+            
+            for pattern in vote_patterns:
+                match = re.search(pattern, response_text)
+                if match:
+                    return match.group(1)
                 
         return None

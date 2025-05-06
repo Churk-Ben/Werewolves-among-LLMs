@@ -4,7 +4,7 @@ from game import Game
 
 
 class Server:
-    def __init__(self, host="0.0.0.0", port=5000):
+    def __init__(self, host="0.0.0.0", port=12000):
         self.host = host
         self.port = port
         self.app = Flask(__name__)
