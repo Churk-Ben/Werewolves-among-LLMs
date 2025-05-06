@@ -5,3 +5,4 @@ python-engineio==4.7.1
 Werkzeug==2.3.7
 bidict==0.22.1
 openai
+python-dotenv

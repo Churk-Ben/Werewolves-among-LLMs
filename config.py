@@ -1,6 +1,14 @@
-# API配置
+# 大模型配置
+try:
+    import os
+    from dotenv import load_dotenv
+
+    load_dotenv()
+    API_KEY = os.getenv("API_KEY")
+except:
+    API_KEY = "YOUR_API_KEY"  # 先前版本的api_key截至pre release前已失效, 请在此处填写您申请的API_KEY
+
 API_URL = "https://api.deepseek.com"
-API_KEY = "sk-4e5351b24ef34d75bd2e489f1ff73e4a"  # 替换为你的实际API密钥
 DEFAULT_MODEL = "deepseek-chat"
 
 # 角色配置
