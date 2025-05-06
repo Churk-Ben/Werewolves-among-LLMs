@@ -13,7 +13,10 @@ class Player:
         self.reset_history()
 
     def reset_history(self):
-        """重置玩家的历史记录，清空记忆"""
+        """
+        重置玩家的历史记录，清空记忆
+        """
+
         initial_message = PLAYER_PROMPTS["initial_message"].format(self.name, self.role)
         self.history = [
             {
@@ -23,7 +26,10 @@ class Player:
         ]
 
     def listen(self, message):
-        """存储同房间他人和自己的消息，避免重复添加，提升健壮性"""
+        """
+        存储同房间他人和自己的消息，避免重复添加，提升健壮性
+        """
+
         if not message or "player" not in message or "content" not in message:
             return
         if message["player"] == self.name:
@@ -44,7 +50,10 @@ class Player:
             )
 
     def act(self, prompt):
-        """根据思考结果执行行动(发言或投票)(speech)，增加异常处理"""
+        """
+        根据思考结果执行行动(发言或投票)(speech)，增加异常处理
+        """
+
         try:
             response = self.client.chat.completions.create(
                 model=DEFAULT_MODEL,

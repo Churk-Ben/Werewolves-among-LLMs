@@ -61,7 +61,7 @@ class Server:
         return message
 
     def send_stream(self, player, response, type, room="ALL"):
-        """response须为client回复对象"""
+        # response须为client回复对象
         message = {
             "player": player,
             "type": type,

@@ -15,10 +15,13 @@ class Manager:
             self.players_state = []
             self.players_object = []
             roles = random.sample(CHARACTERS, len(CHARACTERS))
+
             for i, name in enumerate(playerList):
                 p = round(random.random(), 2)
                 player = Player(self, name, roles[i], p)
-                self.players_object.append(player)
+                self.players_object.append(
+                    player,
+                )
                 self.players_state.append(
                     {
                         "name": name,
@@ -54,17 +57,9 @@ class Manager:
                 response = player.act(prompt)
                 for oplayer in self.players_object:
                     oplayer.listen(response)
-
         else:
             for player in self.players_object:
                 if player.name == name:
                     response = player.act(prompt)
                     for oplayer in self.players_object:
                         oplayer.listen(response)
-
-
-if __name__ == "__main__":
-    manager = Manager(None)
-    manager.init_players()
-    print(manager.players_state)
-    print(manager.players_object)

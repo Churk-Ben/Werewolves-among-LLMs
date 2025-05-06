@@ -219,8 +219,8 @@ class Game:
                 self.night_phase()
                 self.day_phase()
                 if (
-                    self.state["phase"] == "游戏结束 - 好人胜利"
-                    or self.state["phase"] == "游戏结束 - 狼人胜利"
+                    self.state["phase"] == GAME_PHASES["villagers_win"]
+                    or self.state["phase"] == GAME_PHASES["werewolves_win"]
                 ):
                     break
         except Exception as e:
