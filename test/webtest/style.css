@@ -1,0 +1,275 @@
+:root {
+    /* Role Colors */
+    --villager-color: #3e3e3e;
+    --werewolf-color: #d32f2f;
+    --seer-color: #1292cd;
+    --witch-color: #c91ce4;
+    --hunter-color: #ffc107;
+
+    /* General Colors */
+    --background-color: #f0f2f5;
+    --white: #ffffff;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+    --border-color: #e0e0e0;
+    --text-primary: #333333;
+    --text-secondary: #666666;
+
+    /* Message Colors */
+    --thought-bg: var(--background-color);
+    --thought-text: var(--text-secondary);
+    --speech-bg: #e3f2fd;
+    --speech-text: #1976d2;
+    --error-bg: #ffebee;
+    --error-text: #b71c1c;
+
+    /* Button Colors */
+    --button-bg: var(--speech-text);
+    --button-text: var(--white);
+    --button-hover-bg: #1565c0;
+    --button-disabled-bg: #bdbdbd;
+
+    /* Player List Colors */
+    --player-list-bg: #fafafa;
+    --player-card-bg: var(--white);
+    --expand-button-bg: var(--border-color);
+    --expand-button-text: var(--text-primary);
+    --player-details-border: var(--border-color);
+    --player-details-text: var(--text-secondary);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    transition: all .3s ease;
+}
+
+body {
+    font-family: 'Microsoft YaHei', sans-serif;
+    background-color: var(--background-color);
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.container {
+    display: flex;
+    width: 90%;
+    max-width: 1200px;
+    height: 80vh;
+    background: var(--white);
+    border-radius: 12px;
+    box-shadow: 0 2px 10px var(--shadow-color);
+}
+
+.chat-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid var(--border-color);
+}
+
+.chat-header {
+    padding: 20px;
+    border-bottom: 1px solid var(--border-color);
+    background-color: var(--white);
+    border-radius: 12px 0 0 0;
+}
+
+.chat-header h1 {
+    font-size: 24px;
+    color: var(--text-primary);
+    margin-bottom: 10px;
+}
+
+.game-status {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.chat-messages {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.message {
+    margin-bottom: 15px;
+    padding: 10px;
+    border-radius: 8px;
+    max-width: 80%;
+    animation: fadeIn 0.3s ease;
+}
+
+.message.thought {
+    background-color: var(--thought-bg);
+    color: var(--thought-text);
+    font-weight: lighter;
+}
+
+.message.speech {
+    background-color: var(--speech-bg);
+    color: var(--speech-text);
+}
+
+.message.error {
+    background-color: var(--error-bg);
+    color: var(--error-text);
+}
+
+.chat-input {
+    padding: 20px;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    gap: 10px;
+}
+
+#message-input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+#send-button,
+#history-button {
+    padding: 10px 20px;
+    background-color: var(--button-bg);
+    color: var(--button-text);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+#send-button:hover,
+#history-button:hover {
+    background-color: var(--button-hover-bg);
+}
+
+#send-button:disabled,
+#history-button:disabled {
+    background-color: var(--button-disabled-bg);
+    cursor: not-allowed;
+}
+
+.player-list {
+    width: 250px;
+    padding: 20px;
+    background-color: var(--player-list-bg);
+    border-radius: 0 12px 12px 0;
+    overflow-y: auto;
+    /* 确保玩家列表背景色在所有游戏阶段保持不变 */
+    box-shadow: 0 2px 10px var(--shadow-color);
+    position: relative;
+    z-index: 1;
+    color: var(--text-primary);
+
+    /* Hide scrollbar for IE, Edge and Firefox */
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.player-list::-webkit-scrollbar {
+    display: none;
+}
+
+.player-list h2 {
+    margin-bottom: 15px;
+    color: var(--text-primary);
+}
+
+.player-list ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.player-list li {
+    padding: 10px;
+    margin-bottom: 5px;
+    border-radius: 4px;
+    background-color: var(--player-card-bg);
+    box-shadow: 0 1px 3px var(--shadow-color);
+}
+
+/* 玩家卡片样式 */
+.player-card {
+    cursor: pointer;
+}
+
+.player-basic-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.expand-button {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    line-height: 18px;
+    text-align: center;
+    border-radius: 50%;
+    background-color: var(--expand-button-bg);
+    color: var(--expand-button-text);
+    font-weight: bold;
+    cursor: pointer;
+    user-select: none;
+}
+
+.player-details {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px dashed var(--player-details-border);
+    font-size: 0.9em;
+    color: var(--player-details-text);
+}
+
+.player-details div {
+    margin-bottom: 4px;
+}
+
+/* 角色样式 */
+.player-list li.villager {
+    border-left: 4px solid var(--villager-color);
+}
+
+.player-list li.werewolf {
+    border-left: 4px solid var(--werewolf-color);
+}
+
+.player-list li.seer {
+    border-left: 4px solid var(--seer-color);
+}
+
+.player-list li.witch {
+    border-left: 4px solid var(--witch-color);
+}
+
+.player-list li.hunter {
+    border-left: 4px solid var(--hunter-color);
+}
+
+/* 死亡样式 */
+.player-list li.dead {
+    text-decoration: line-through;
+    opacity: 0.6;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
