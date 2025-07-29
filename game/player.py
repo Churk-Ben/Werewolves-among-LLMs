@@ -6,7 +6,10 @@ import random
 from typing import List
 from rich import print
 
-DEBUG = 0
+DEBUG = False
+with open("config.yaml", "r", encoding="utf-8") as f:
+    config = safe_load(f)
+    DEBUG = config["debug"]
 
 PROMPT = """
 你正在一局狼人杀游戏中, 你的名字是{self.name}, 身份是{self.role}. 请认真参与游戏, 努力帮助自己的阵营获胜.
