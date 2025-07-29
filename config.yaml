@@ -1,0 +1,44 @@
+debug: false
+
+app:
+    name: Werewolf of Deepseeks
+    author: Churk_Ben
+    version: 2.0
+
+# 本地服务器配置
+web:
+    enable: false
+    host: 127.0.0.1
+    port: 5000
+
+# 玩家配置
+players:
+    - name: Alan
+      human: false
+      model:
+          provider: deepseek/deepseek-chat
+
+    - name: Bob
+      human: false
+      model:
+          provider: deepseek/deepseek-chat
+
+    - name: Churk
+      human: false
+      model:
+          provider: deepseek/deepseek-chat
+
+    - name: David
+      human: false
+      model:
+          provider: deepseek/deepseek-chat
+
+    - name: Eve
+      human: false
+      model:
+          provider: deepseek/deepseek-chat
+
+    - name: Frank
+      human: false
+      model:
+          provider: deepseek/deepseek-chat

@@ -1,99 +1,111 @@
-# Werewolves of Deepseeks / Deepseek 狼人杀
+# Werewolves of Deepseeks
 
-A Python-based Werewolf game implementation with AI players.  
-基于Python的狼人杀游戏实现，包含AI玩家功能。
+基于 Python 的狼人杀游戏实现，支持 AI 玩家和网页界面。
 
-## Table of Contents / 目录
+## 目录 / Table of Contents
 
-- [Features / 功能特点](#features--功能特点)
-- [Installation / 安装指南](#installation--安装指南)
-- [Usage / 使用说明](#usage--使用说明)
-- [Game Flow / 游戏流程](#game-flow--游戏流程)
-- [File Structure / 文件结构](#file-structure--文件结构)
+- [功能特点 / Features](#功能特点--features)
+- [安装指南 / Installation](#安装指南--installation)
+- [使用说明 / Usage](#使用说明--usage)
+- [游戏流程 / Game-Flow](#游戏流程--game-flow)
+- [文件结构 / File-Structure](#文件结构--file-structure)
+- [技术架构 / Tech-Stack](#技术架构--tech-stack)
+- [注意事项 / Notes](#注意事项--notes)
 
-## Features / 功能特点
+## 功能特点 / Features
 
-- AI-powered players with memory / 具有记忆功能的AI玩家
-- Complete day-night cycle / 完整的昼夜循环
-- Role assignment system / 角色分配系统
-- Voting mechanism / 投票机制
-- Web-based interface / 基于网页的界面
+- 具有记忆功能的 AI 玩家（AI-powered players with memory）
+- 完整的昼夜循环（Complete day-night cycle）
+- 角色分配系统（Role assignment system）
+- 投票机制（Voting mechanism）
+- 基于网页的界面（Web-based interface）
+- 实时消息转发与状态跟踪
+- 支持通过 Web 界面发送游戏命令
 
-## Installation / 安装指南
+## 安装指南 / Installation
 
-1. Clone this repository  
-   克隆本仓库
+1. 克隆本仓库 / Clone this repository
 
    ```bash
    git clone https://github.com/your-repo/Werewolves-of-Deepseeks.git
    cd Werewolves-of-Deepseeks
    ```
 
-2. Install dependencies  
-   安装依赖
+2. 安装依赖 / Install dependencies
 
    ```bash
    pip install -r requirements.txt
    ```
 
-3. Create .env file with your API key  
-   创建.env文件并添加API密钥
+3. 创建 .env 文件并添加 API 密钥 / Create .env file with your API key
 
    ```bash
-   echo "API_KEY=your_api_key_here" > .env
+   echo "DEEPSEEK_API_KEY=your_api_key_here" > .env
+   echo "CHAT_GPT_API_KEY=your_api_key_here" > .env
+   ...
    ```
 
-## Usage / 使用说明
+## 使用说明 / Usage
 
-To start the game server:  
-启动游戏服务器:
+### 配置文件 / Configuration File
+
+- `config.yaml`：配置游戏设置、AI 玩家和本地服务等
+- `.env`：配置 API 密钥等敏感信息
+
+### 在控制台启动游戏 / Start Game in Console
+
+``` yaml
+web:
+    enable: false
+```
 
 ```bash
-python server.py
+python app.py
 ```
 
-Then open `http://localhost:12000` in your browser.  
-然后在浏览器中打开 `http://localhost:12000`
 
-## Game Flow / 游戏流程
+### 启动本地服务器
 
-1. Game initialization - roles are randomly assigned  
-   游戏初始化 - 随机分配角色
-2. Night phase - werewolves choose victims  
-   夜晚阶段 - 狼人选择受害者
-3. Day phase - discussion and voting  
-   白天阶段 - 讨论和投票
-4. Repeat until game ends  
-   重复直到游戏结束
-
-## File Structure / 文件结构
-
-```plaintext
-├── game.py          # Main game logic / 主游戏逻辑
-├── manager.py       # Player management / 玩家管理
-├── player.py        # Player class / 玩家类
-├── prompts.py       # Game messages / 游戏提示信息
-├── server.py        # Web server / 网页服务器
-├── static/          # Static files / 静态文件
-│   ├── css/         # Stylesheets / 样式表
-│   └── js/          # JavaScript / 前端脚本
-└── templates/       # HTML templates / HTML模板
+``` yaml
+web:
+    enable: true
 ```
 
-## License / 许可证
+```bash
+python app.py
+```
 
-[MIT License]
+浏览器访问 `http://127.0.0.1:5000`，在输入框中输入 `/start` 开始游戏
 
-## Updates / 更新
+## 游戏流程 / Game Flow
 
-- May 2025: Updated all dependencies to their latest versions / 2025年5月：更新所有依赖至最新版本
-  - Flask 3.1.0
-  - Flask-SocketIO 5.5.1
-  - python-socketio 5.13.0
-  - python-engineio 4.12.0
-  - Werkzeug 3.1.3
-  - bidict 0.23.1
-  - openai 1.77.0
-  - python-dotenv 1.1.0
-- Added CORS support / 添加CORS支持
-- Configured server to run on port 12000 / 配置服务器在12000端口运行
+1. 游戏初始化 - 随机分配角色
+2. 夜晚阶段 - 狼人选择受害者
+3. 白天阶段 - 讨论和投票
+4. 重复直到游戏结束
+
+## 文件结构 / File Structure
+
+- `server/Server.py`：主服务器类，包含控制台捕获和消息转发逻辑
+- `static/js/main.js`：前端 JavaScript，处理 WebSocket 连接和 UI 更新
+- `static/css/`：样式文件
+- `templates/index.html`：主页面模板
+- `requirements.txt`：依赖列表
+- `server.py`：游戏主服务器入口
+- `app.py`：Web 服务器入口
+
+## 技术架构 / Tech Stack
+
+- **后端**: Python, Flask, Flask-SocketIO
+- **前端**: HTML, CSS, JavaScript, Socket.IO
+- **AI**: 具备记忆与推理能力的 AI 玩家
+
+## 注意事项 / Notes
+
+- 服务器监听控制台输出，不修改游戏逻辑
+- 支持 Rich 库输出格式，自动移除 ANSI 转义序列
+- 玩家信息解析基于游戏输出的文本模式匹配
+
+---
+
+欢迎贡献和反馈！

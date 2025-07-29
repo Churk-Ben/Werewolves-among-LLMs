@@ -1,0 +1,62 @@
+[20:54:26] 本局玩家人数: 6
+[20:54:26] 角色卡配置: ['Werewolf 2人', 'Villager 2人', 'Seer 1人', 'Witch 1人']
+[20:54:26] 玩家 ['Alan', 'Bob', 'Churk', 'David', 'Eve', 'Frank'] 已加入游戏.
+[20:54:27] 角色分配完成, 正在分发身份牌...
+[20:54:27] 你的身份是: Seer
+[20:54:27] 游戏开始. 天黑, 请闭眼.
+[20:54:27] 第 1 天夜晚降临
+[20:54:27] 狼人行动了
+[20:54:27] 预言家请睁眼预言家, 请选择要查验的玩家: 
+[20:54:27] 你查验了 Frank 的身份, 结果为 好人
+[20:54:27] 预言家行动了
+[20:54:27] 女巫行动了
+[20:54:27] 天亮了. 现在是第 1 天白天
+[20:54:27] Eve 死了, 原因是 在夜晚被杀害
+[20:54:27] [遗言] Eve 发言: ai_response<br>, and <strong>ai_response</strong>
+[20:54:28] 存活玩家: Alan, Bob, Churk, David, Frank
+[20:54:28] Alan 发言: ai_response<br>, and <strong>ai_response</strong>
+[20:54:28] Bob 发言: ai_response<br>, and <strong>ai_response</strong>
+[20:54:28] Churk 发言: ai_response<br>, and <strong>ai_response</strong>
+[20:54:28] David 发言: ai_response<br>, and <strong>ai_response</strong>
+[20:54:28] Frank 发言: ai_response<br>, and <strong>ai_response</strong>
+[20:54:28] Alan 投票给了 Churk
+[20:54:28] Bob 投票给了 Frank
+[20:54:28] Churk 投票给了 Bob
+[20:54:28] David 投票给了 David
+[20:54:28] Frank 投票给了 Churk
+[20:54:28] Bob: 1 票
+[20:54:28] Churk: 2 票
+[20:54:28] David: 1 票
+[20:54:28] Frank: 1 票
+[20:54:28] Churk 死了, 原因是 被投票出局
+[20:54:28] [遗言] Churk 发言: ai_response<br>, and <strong>ai_response</strong>
+[20:54:28] 第 2 天夜晚降临
+[20:54:28] 狼人行动了
+[20:54:28] 预言家请睁眼预言家, 请选择要查验的玩家: 
+[20:54:28] 你查验了 Bob 的身份, 结果为 狼人
+[20:54:28] 预言家行动了
+[20:54:28] 天亮了. 现在是第 2 天白天
+[20:54:28] Frank 死了, 原因是 在夜晚被杀害
+[20:54:28] 存活玩家: Alan, Bob, David
+[20:54:28] Alan 发言: ai_response<br>, and <strong>ai_response</strong>
+[20:54:28] Bob 发言: ai_response<br>, and <strong>ai_response</strong>
+[20:54:28] David 发言: ai_response<br>, and <strong>ai_response</strong>
+[20:54:28] Alan 投票给了 David
+[20:54:28] Bob 投票给了 David
+[20:54:28] David 投票给了 David
+[20:54:28] David: 3 票
+[20:54:28] David 死了, 原因是 被投票出局
+[20:54:28] [遗言] David 发言: ai_response<br>, and <strong>ai_response</strong>
+[20:54:28] 游戏结束：狼人胜利
+[20:54:28] - Alan: Villager (存活) <br>
+
+[20:54:28] - Bob: Werewolf (存活) <br>
+
+[20:54:28] - Churk: Witch (死亡) <br>
+
+[20:54:28] - David: Villager (死亡) <br>
+
+[20:54:28] - Eve: Werewolf (死亡) <br>
+
+[20:54:28] - Frank: Seer (死亡) <br>
+
