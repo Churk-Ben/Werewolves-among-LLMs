@@ -1,6 +1,8 @@
-# Werewolves of Deepseeks
+# Werewolves among LLMs
 
 基于 Python 的狼人杀游戏实现，支持 AI 玩家和网页界面。
+> [!note]
+> 目前非推理模型因为没有适配思维能力, 所以表现较差.
 
 ## 目录 / Table of Contents
 
@@ -98,7 +100,7 @@ python app.py
 
 - **后端**: Python, Flask, Flask-SocketIO
 - **前端**: HTML, CSS, JavaScript, Socket.IO
-- **AI**: 具备记忆与推理能力的 AI 玩家
+- **AI**: LiteLLM
 
 ## 注意事项 / Notes
 
