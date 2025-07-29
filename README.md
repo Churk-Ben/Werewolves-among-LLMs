@@ -40,20 +40,36 @@
 3. 创建 .env 文件并添加 API 密钥 / Create .env file with your API key
 
    ```bash
-   echo "API_KEY=your_api_key_here" > .env
+   echo "DEEPSEEK_API_KEY=your_api_key_here" > .env
+   echo "CHAT_GPT_API_KEY=your_api_key_here" > .env
+   ...
    ```
 
 ## 使用说明 / Usage
 
-### 启动游戏服务器
+### 配置文件 / Configuration File
 
-```bash
-python server.py
+- `config.yaml`：配置游戏设置、AI 玩家和本地服务等
+- `.env`：配置 API 密钥等敏感信息
+
+### 在控制台启动游戏 / Start Game in Console
+
+``` yaml
+web:
+    enable: false
 ```
 
-浏览器访问 `http://localhost:5000`
+```bash
+python app.py
+```
 
-### 启动 Web 服务器（可选，推荐）
+
+### 启动本地服务器
+
+``` yaml
+web:
+    enable: true
+```
 
 ```bash
 python app.py
