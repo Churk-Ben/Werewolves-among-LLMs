@@ -115,7 +115,6 @@ class Player:
 
         response = completion(
             model=self.config["model"]["provider"],
-            api_key=self.config["model"]["api_key"],
             messages=history,
             stream=False,
         )
@@ -183,7 +182,6 @@ class Player:
         print(f"{self.name} 正在思考...")
         response = completion(
             model=self.config["model"]["provider"],
-            api_key=self.config["model"]["api_key"],
             messages=history,
             stream=False,
         )

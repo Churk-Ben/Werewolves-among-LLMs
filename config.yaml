@@ -1,4 +1,4 @@
-debug: true
+debug: false
 
 app:
     name: Werewolf of Deepseeks
@@ -16,71 +16,29 @@ players:
     - name: Alan
       human: false
       model:
-          provider: deepseek/deepseek-reasoner
-          api_key: sk-3c5281ff10c849199c7ca810a7e9a52c
+          provider: deepseek/deepseek-chat
 
     - name: Bob
       human: false
       model:
-          provider: deepseek/deepseek-reasoner
-          api_key: sk-3c5281ff10c849199c7ca810a7e9a52c
+          provider: deepseek/deepseek-chat
 
     - name: Churk
       human: false
       model:
-          provider: deepseek/deepseek-reasoner
-          api_key: sk-3c5281ff10c849199c7ca810a7e9a52c
+          provider: deepseek/deepseek-chat
 
     - name: David
       human: false
       model:
-          provider: deepseek/deepseek-reasoner
-          api_key: sk-3c5281ff10c849199c7ca810a7e9a52c
+          provider: deepseek/deepseek-chat
 
     - name: Eve
       human: false
       model:
-          provider: deepseek/deepseek-reasoner
-          api_key: sk-3c5281ff10c849199c7ca810a7e9a52c
+          provider: deepseek/deepseek-chat
 
     - name: Frank
       human: false
       model:
-          provider: deepseek/deepseek-reasoner
-          api_key: sk-3c5281ff10c849199c7ca810a7e9a52c
-
-    # - name: Grace
-    #   human: false
-    #   model:
-    #       provider: deepseek/deepseek-reasoner
-    #       api_key: sk-3c5281ff10c849199c7ca810a7e9a52c
-
-    # - name: Helen
-    #   human: false
-    #   model:
-    #       provider: deepseek/deepseek-reasoner
-    #       api_key: sk-3c5281ff10c849199c7ca810a7e9a52c
-
-    # - name: Iris
-    #   human: false
-    #   model:
-    #       provider: deepseek/deepseek-reasoner
-    #       api_key: sk-3c5281ff10c849199c7ca810a7e9a52c
-
-    # - name: Julia
-    #   human: false
-    #   model:
-    #       provider: deepseek/deepseek-reasoner
-    #       api_key: sk-3c5281ff10c849199c7ca810a7e9a52c
-
-    # - name: Kally
-    #   human: false
-    #   model:
-    #       provider: deepseek/deepseek-reasoner
-    #       api_key: sk-3c5281ff10c849199c7ca810a7e9a52c
-
-    # - name: Levin
-    #   human: false
-    #   model:
-    #       provider: deepseek/deepseek-reasoner
-    #       api_key: sk-3c5281ff10c849199c7ca810a7e9a52c
+          provider: deepseek/deepseek-chat
