@@ -1,0 +1,75 @@
+.player-card {
+    display: block;
+}
+
+.player-basic-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.expand-button {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    line-height: 18px;
+    text-align: center;
+    border-radius: 50%;
+    background-color: var(--expand-button-bg);
+    color: var(--expand-button-text);
+    font-weight: bold;
+    cursor: pointer;
+    user-select: none;
+}
+
+.player-details {
+    border-top: 1px dashed var(--player-details-border);
+    font-size: 0.9em;
+    color: var(--player-details-text);
+    max-height: 0;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    opacity: 0;
+}
+
+.player-details.expanded {
+    margin-top: 8px;
+    padding-top: 8px;
+    max-height: 200px;
+    opacity: 1;
+}
+
+.player-details div {
+    margin-bottom: 4px;
+}
+
+/* 角色样式 */
+.player-list li.villager {
+    border-left: 4px solid var(--villager-color);
+}
+
+.player-list li.werewolf {
+    border-left: 4px solid var(--werewolf-color);
+}
+
+.player-list li.seer {
+    border-left: 4px solid var(--seer-color);
+}
+
+.player-list li.witch {
+    border-left: 4px solid var(--witch-color);
+}
+
+.player-list li.hunter {
+    border-left: 4px solid var(--hunter-color);
+}
+
+.player-list li.guard {
+    border-left: 4px solid var(--guard-color);
+}
+
+/* 死亡样式 */
+.player-list li.dead {
+    text-decoration: line-through;
+    opacity: 0.6;
+}

@@ -1,0 +1,39 @@
+:root {
+    /* Role Colors */
+    --villager-color: #3e3e3e;
+    --werewolf-color: #d32f2f;
+    --seer-color: #1292cd;
+    --witch-color: #c91ce4;
+    --hunter-color: #ffc107;
+    --guard-color: #4caf50;
+
+    /* General Colors */
+    --background-color: #f0f2f5;
+    --white: #ffffff;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+    --border-color: #e0e0e0;
+    --text-primary: #333333;
+    --text-secondary: #666666;
+
+    /* Message Colors */
+    --system-bg: var(--background-color);
+    --system-text: var(--text-secondary);
+    --speech-bg: #e3f2fd;
+    --speech-text: #1976d2;
+    --error-bg: #ffebee;
+    --error-text: #b71c1c;
+
+    /* Button Colors */
+    --button-bg: var(--speech-text);
+    --button-text: var(--white);
+    --button-hover-bg: #1565c0;
+    --button-disabled-bg: #bdbdbd;
+
+    /* Player List Colors */
+    --player-list-bg: #fafafa;
+    --player-card-bg: var(--white);
+    --expand-button-bg: var(--border-color);
+    --expand-button-text: var(--text-primary);
+    --player-details-border: var(--border-color);
+    --player-details-text: var(--text-secondary);
+}

@@ -1,233 +1,171 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const socket = io();
-  const messagesDiv = document.getElementById("messages");
-  const messageInput = document.getElementById("message-input");
-  const sendButton = document.getElementById("send-button");
-  const playersList = document.getElementById("players");
-  const gamePhase = document.getElementById("game-phase");
-  const historyButton = document.getElementById("history-button");
+// WebSocket连接
+const socket = io();
 
-  // 连接成功后启用输入
-  socket.on("connect", () => {
+// DOM元素
+const messagesContainer = document.getElementById('messages');
+const messageInput = document.getElementById('message-input');
+const sendButton = document.getElementById('send-button');
+const gamePhaseElement = document.getElementById('game-phase');
+const playersContainer = document.getElementById('players');
+
+// 初始化
+document.addEventListener('DOMContentLoaded', function () {
+    // 启用输入框和发送按钮
     messageInput.disabled = false;
     sendButton.disabled = false;
-    historyButton.disabled = false;
-  });
 
-  // 绑定查看历史记忆按钮点击事件
-  historyButton.addEventListener("click", () => {
-    socket.emit("get_player_history");
-  });
+    // 清除默认消息
+    messagesContainer.innerHTML = '';
 
-  // 处理接收到的玩家历史记忆
-  socket.on("player_history", (playersHistory) => {
-    console.log("玩家历史记忆:", playersHistory);
+    // 添加欢迎消息
+    addMessage('system', '欢迎来到狼人杀游戏！输入 "/start" 开始游戏。');
+});
 
-    // 遍历每个玩家的历史记忆并输出到控制台
-    for (const playerName in playersHistory) {
-      console.group(`玩家 ${playerName} 的历史记忆:`);
-      playersHistory[playerName].forEach((message, index) => {
-        console.log(`消息 ${index + 1}:`, message);
-      });
-      console.groupEnd();
+// WebSocket事件处理
+socket.on('connect', function () {
+    console.log('已连接到服务器');
+    addMessage('system', '已连接到服务器');
+});
+
+socket.on('disconnect', function () {
+    console.log('与服务器断开连接');
+    addMessage('error', '与服务器断开连接');
+});
+
+socket.on('message', function (data) {
+    addMessage(data.type, data.content, data.timestamp);
+});
+
+socket.on('game_state', function (data) {
+    updateGameState(data.phase, data.players);
+});
+
+// 发送消息
+function sendMessage() {
+    const message = messageInput.value.trim();
+    if (message) {
+        if (message.startsWith('/')) {
+            // 发送命令
+            socket.emit('command', { command: message });
+            addMessage('system', `执行命令: ${message}`);
+        } else {
+            // 普通消息（暂时不处理）
+            addMessage('speech', `你: ${message}`);
+        }
+        messageInput.value = '';
     }
+}
 
-    // 在界面上显示提示信息
-    const messageElement = document.createElement("div");
-    messageElement.classList.add("message");
-    messageElement.classList.add("thought");
+// 添加消息到聊天区域
+function addMessage(type, content, timestamp) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${type}`;
 
-    const playerName = document.createElement("strong");
-    playerName.textContent = "系统 : ";
-    messageElement.appendChild(playerName);
+    const timeStr = timestamp || new Date().toLocaleTimeString();
+    messageDiv.innerHTML = `
+        <div class="message-content">${content}</div>
+        <div class="message-time">${timeStr}</div>
+    `;
 
-    const messageContent = document.createElement("span");
-    messageContent.textContent =
-      "已将所有玩家的历史记忆输出到控制台, 请按F12打开开发者工具查看";
-    messageElement.appendChild(messageContent);
-    messagesDiv.appendChild(messageElement);
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
-  });
+    messagesContainer.appendChild(messageDiv);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
 
-  // 绑定发送按钮点击事件
-  sendButton.addEventListener("click", sendMessage);
-
-  // 绑定回车键发送消息
-  messageInput.addEventListener("keypress", (e) => {
-    if (e.key === "Enter") {
-      sendMessage();
-    }
-  });
-
-  // 处理接收到的消息
-  let currentStreamingMessage = null;
-
-  socket.on("message", (message) => {
-    const messageElement = document.createElement("div");
-    messageElement.classList.add("message");
-    messageElement.classList.add(message.type);
-
-    if (message.player) {
-      const playerName = document.createElement("strong");
-      playerName.textContent = message.player + " : ";
-      messageElement.appendChild(playerName);
-    }
-
-    const messageContent = document.createElement("span");
-    messageContent.innerHTML = message.content;
-    messageElement.appendChild(messageContent);
-    messagesDiv.appendChild(messageElement);
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
-  });
-
-  // 处理流式消息开始
-  socket.on("message_start", (message) => {
-    if (!message?.type) return; // 添加必要字段检查
-
-    currentStreamingMessage = document.createElement("div");
-    currentStreamingMessage.classList.add("message");
-    currentStreamingMessage.classList.add(message.type);
-
-    if (message.player) {
-      const playerName = document.createElement("strong");
-      playerName.textContent = message.player + " : ";
-      currentStreamingMessage.appendChild(playerName);
-    }
-
-    const messageContent = document.createElement("span");
-    currentStreamingMessage.appendChild(messageContent);
-    messagesDiv.appendChild(currentStreamingMessage);
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
-  });
-
-  // 处理流式消息块
-  socket.on("message_chunk", (message) => {
-    if (!currentStreamingMessage || !message?.chunk) return; // 添加检查
-
-    const contentSpan = currentStreamingMessage.querySelector("span");
-    if (contentSpan) {
-      contentSpan.textContent += message.chunk; // 使用textContent替代innerHTML
-      messagesDiv.scrollTop = messagesDiv.scrollHeight;
-    }
-  });
-
-  // 处理流式消息结束
-  socket.on("message_end", () => {
-    currentStreamingMessage = null;
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
-  });
-
-  // 发送消息
-  function sendMessage() {
-    const content = messageInput.value.trim();
-    if (content) {
-      // 先显示用户消息
-      const messageElement = document.createElement("div");
-      messageElement.classList.add("message");
-      messageElement.classList.add("speech");
-
-      const playerName = document.createElement("strong");
-      playerName.textContent = "法官 : ";
-
-      const messageContent = document.createElement("span");
-      messageContent.textContent = content;
-
-      messageElement.appendChild(playerName);
-      messageElement.appendChild(messageContent);
-      messagesDiv.appendChild(messageElement);
-
-      // 发送到服务器处理
-      socket.emit("order", { content: content });
-      messageInput.value = "";
-
-      // 自动滚动到最新消息
-      messagesDiv.scrollTop = messagesDiv.scrollHeight;
-    }
-  }
-
-  // 更新游戏状态
-  socket.on("fresh_state", (state) => {
+// 更新游戏状态
+function updateGameState(phase, players) {
     // 更新游戏阶段
-    gamePhase.textContent = `阶段: ${state.phase}`;
-
-    // 显示当前天数
-    if (state.current_night > 0) {
-      gamePhase.textContent += ` | 第${state.current_night}天`;
+    if (gamePhaseElement) {
+        gamePhaseElement.textContent = phase;
     }
 
     // 更新玩家列表
-    playersList.innerHTML = "";
-    state.players.forEach((player) => {
-      const li = document.createElement("li");
-      li.classList.add("player-card");
+    if (players && players.length > 0) {
+        updatePlayerList(players);
+    }
+}
 
-      // 创建玩家基本信息容器
-      const playerBasicInfo = document.createElement("div");
-      playerBasicInfo.classList.add("player-basic-info");
+// 更新玩家列表
+function updatePlayerList(players) {
+    playersContainer.innerHTML = '';
 
-      // 设置基础文本内容
-      let displayText = player.name;
+    players.forEach(player => {
+        const playerCard = document.createElement('li');
+        playerCard.className = `player-card ${getRoleClass(player.role)} ${player.status === '死亡' ? 'dead' : ''}`;
 
-      // 如果是投票结束阶段且玩家有投票，显示投票结果
-      if (state.phase === "投票结束" && player.voted !== -1) {
-        displayText += ` (被投票数: ${player.voted})`;
-      }
+        playerCard.innerHTML = `
+            <div class="player-basic-info">
+                <span>${player.name}</span>
+                <span class="expand-button">=</span>
+            </div>
+            <div class="player-details">
+                <div>身份: ${player.role}</div>
+                <div>状态: ${player.status}</div>
+                <div>温度: ${player.temperature}</div>
+            </div>
+        `;
 
-      playerBasicInfo.textContent = displayText;
-
-      // 创建展开/折叠按钮
-      const expandButton = document.createElement("span");
-      expandButton.classList.add("expand-button");
-      expandButton.textContent = "+";
-      playerBasicInfo.appendChild(expandButton);
-
-      // 创建详细信息容器
-      const playerDetails = document.createElement("div");
-      playerDetails.classList.add("player-details");
-      playerDetails.style.display = "none";
-
-      // 添加详细信息
-      playerDetails.innerHTML = `
-                <div>角色: ${player.role}</div>
-                <div>存活: ${player.alive ? "是" : "否"}</div>
-                <div>top_p值: ${player.p}</div>
-            `;
-
-      // 添加展开/折叠功能
-      expandButton.addEventListener("click", (e) => {
-        e.stopPropagation();
-        if (playerDetails.style.display === "none") {
-          playerDetails.style.display = "block";
-          expandButton.textContent = "-";
-        } else {
-          playerDetails.style.display = "none";
-          expandButton.textContent = "+";
-        }
-      });
-
-      // 将基本信息和详细信息添加到列表项
-      li.appendChild(playerBasicInfo);
-      li.appendChild(playerDetails);
-
-      // 根据角色添加样式
-      if (player.role === "VILLAGER") {
-        li.classList.add("villager");
-      } else if (player.role === "WEREWOLF") {
-        li.classList.add("werewolf");
-      } else if (player.role === "SEER") {
-        li.classList.add("seer");
-      } else if (player.role === "WITCH") {
-        li.classList.add("witch");
-      } else if (player.role === "BODYGUARD") {
-        li.classList.add("bodyguard");
-      }
-
-      // 根据存活状态添加样式
-      if (!player.alive) {
-        li.classList.add("dead");
-      }
-
-      playersList.appendChild(li);
+        playersContainer.appendChild(playerCard);
     });
-  });
+
+    // 重新绑定展开按钮事件
+    initializeExpandButtons();
+}
+
+// 获取角色对应的CSS类
+function getRoleClass(role) {
+    const roleMap = {
+        '村民': 'villager',
+        '狼人': 'werewolf',
+        '预言家': 'seer',
+        '女巫': 'witch',
+        '猎人': 'hunter',
+        '守卫': 'guard',
+        'Villager': 'villager',
+        'Werewolf': 'werewolf',
+        'Seer': 'seer',
+        'Witch': 'witch',
+        'Hunter': 'hunter',
+        'Guard': 'guard'
+    };
+    return roleMap[role] || 'villager';
+}
+
+// 初始化展开按钮
+function initializeExpandButtons() {
+    const expandButtons = document.querySelectorAll('.expand-button');
+    expandButtons.forEach(button => {
+        button.addEventListener('click', (e) => {
+            const playerCard = e.target.closest('.player-card');
+            const details = playerCard.querySelector('.player-details');
+
+            // 切换展开状态
+            if (!details.classList.contains('expanded')) {
+                details.style.display = 'block';
+                setTimeout(() => {
+                    details.classList.add('expanded');
+                }, 10);
+                e.target.textContent = '-';
+            } else {
+                details.classList.remove('expanded');
+                // 等待动画完成后再隐藏元素
+                setTimeout(() => {
+                    if (!details.classList.contains('expanded')) {
+                        details.style.display = 'none';
+                    }
+                }, 300);
+                e.target.textContent = '=';
+            }
+
+            e.stopPropagation();
+        });
+    });
+}
+
+// 事件监听器
+sendButton.addEventListener('click', sendMessage);
+
+messageInput.addEventListener('keypress', function (e) {
+    if (e.key === 'Enter') {
+        sendMessage();
+    }
 });
