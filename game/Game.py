@@ -670,8 +670,8 @@ class WerewolfGame:
         final_status_str = ""
         for name, player in self.players.items():
             status = "存活" if player.is_alive else "死亡"
-            final_status_log = f"- {name}: {player.role.capitalize()} ({status}) <br>\n"
-            final_status_str += final_status_log
+            final_status_log = f"- {name}: {player.role.capitalize()} ({status}) <br>"
+            final_status_str = final_status_str + final_status_log + "\n"
             self.logger.log_public_event(
                 final_status_log,
                 self.all_player_names,
