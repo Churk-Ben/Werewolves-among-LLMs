@@ -7,7 +7,7 @@ app:
 
 # 本地服务器配置
 web:
-    enable: false
+    enable: true
     host: 127.0.0.1
     port: 5000
 
@@ -16,29 +16,29 @@ players:
     - name: Alan
       human: false
       model:
-          provider: deepseek/deepseek-chat
+          provider: deepseek/deepseek-reasoner
 
     - name: Bob
       human: false
       model:
-          provider: deepseek/deepseek-chat
+          provider: deepseek/deepseek-reasoner
 
     - name: Churk
       human: false
       model:
-          provider: deepseek/deepseek-chat
+          provider: deepseek/deepseek-reasoner
 
     - name: David
       human: false
       model:
-          provider: deepseek/deepseek-chat
+          provider: deepseek/deepseek-reasoner
 
     - name: Eve
       human: false
       model:
-          provider: deepseek/deepseek-chat
+          provider: deepseek/deepseek-reasoner
 
     - name: Frank
       human: false
       model:
-          provider: deepseek/deepseek-chat
+          provider: deepseek/deepseek-reasoner
