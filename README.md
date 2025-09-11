@@ -10,7 +10,6 @@
 - [安装指南 / Installation](#安装指南--installation)
 - [使用说明 / Usage](#使用说明--usage)
 - [游戏流程 / Game-Flow](#游戏流程--game-flow)
-- [文件结构 / File-Structure](#文件结构--file-structure)
 - [技术架构 / Tech-Stack](#技术架构--tech-stack)
 - [注意事项 / Notes](#注意事项--notes)
 
@@ -29,8 +28,8 @@
 1. 克隆本仓库 / Clone this repository
 
    ```bash
-   git clone https://github.com/your-repo/Werewolves-of-Deepseeks.git
-   cd Werewolves-of-Deepseeks
+   git clone https://github.com/Churk-Ben/Werewolves-among-LLMs.git
+   cd Werewolves-among-LLMs
    ```
 
 2. 安装依赖 / Install dependencies
@@ -66,7 +65,7 @@ python app.py
 ```
 
 
-### 启动本地服务器
+### 启动本地服务器 / Run a Local Host
 
 ``` yaml
 web:
@@ -86,21 +85,11 @@ python app.py
 3. 白天阶段 - 讨论和投票
 4. 重复直到游戏结束
 
-## 文件结构 / File Structure
-
-- `server/Server.py`：主服务器类，包含控制台捕获和消息转发逻辑
-- `static/js/main.js`：前端 JavaScript，处理 WebSocket 连接和 UI 更新
-- `static/css/`：样式文件
-- `templates/index.html`：主页面模板
-- `requirements.txt`：依赖列表
-- `server.py`：游戏主服务器入口
-- `app.py`：Web 服务器入口
-
 ## 技术架构 / Tech Stack
 
 - **后端**: Python, Flask, Flask-SocketIO
 - **前端**: HTML, CSS, JavaScript, Socket.IO
-- **AI**: LiteLLM
+- **AI-API**: [LiteLLM](https://github.com/BerriAI/litellm)
 
 ## 注意事项 / Notes
 
@@ -110,8 +99,8 @@ python app.py
 
 ---
 
-## 感谢开源
-- LiteLLM
+## 致谢
+- [LiteLLM](https://github.com/BerriAI/litellm)
 
 ---
 
