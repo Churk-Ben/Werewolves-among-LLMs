@@ -18,8 +18,6 @@ class WerewolfGame:
         self.witch_save_used = False
         self.witch_poison_used = False
         self.day_number = 0
-
-        ## 游戏日志
         self.logger = GameLogger()
 
     # 工具方法

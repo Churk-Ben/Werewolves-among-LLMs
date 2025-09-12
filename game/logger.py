@@ -24,11 +24,11 @@ class GameLogger:
         return self.player_log_files[player_name]
 
     def log_event(self, message: str, visible_to: List[str]):
-        """将消息记录到指定玩家的日志文件中。"""
+        """将消息记录到指定玩家的日志文件中."""
         for player_name in visible_to:
             log_file = self._get_player_log_file(player_name)
             self._log(log_file, message)
 
     def log_public_event(self, message: str, all_players: List[str]):
-        """将消息记录到所有玩家的日志文件中。"""
+        """将消息记录到所有玩家的日志文件中."""
         self.log_event(message, all_players)
