@@ -114,7 +114,7 @@ class Player:
         history.append({"role": "user", "content": prompt})
 
         response = completion(
-            model=self.config["model"]["provider"],
+            model=self.config["model"],
             messages=history,
             stream=False,
         )
@@ -181,7 +181,7 @@ class Player:
 
         print(f"{self.name} 正在思考...")
         response = completion(
-            model=self.config["model"]["provider"],
+            model=self.config["model"],
             messages=history,
             stream=False,
         )

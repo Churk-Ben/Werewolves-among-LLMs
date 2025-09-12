@@ -5,6 +5,9 @@ from yaml import safe_load
 
 
 def load_config(dotenv_path=".env", config_path="config.yaml"):
+    # 变更kimi为中国站
+    os.environ["MOONSHOT_API_BASE"] = "https://api.moonshot.cn/v1"
+
     if not os.path.exists(dotenv_path):
         return {}
 

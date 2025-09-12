@@ -357,7 +357,7 @@ class WerewolfGame:
             h2("#@ 预言家请睁眼")
             prompt = "预言家, 请选择要查验的玩家: "
             self.logger.log_event(
-                "预言家请睁眼" + prompt,
+                "预言家请睁眼. 请选择要你要查验的玩家: ",
                 [seer_player.name],
             )
             target = prompt_for_choice(seer_player, prompt, alive_players)

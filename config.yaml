@@ -1,4 +1,4 @@
-debug: false
+debug: true
 
 app:
     name: Werewolf of Deepseeks
@@ -7,38 +7,32 @@ app:
 
 # 本地服务器配置
 web:
-    enable: true
+    enable: false
     host: 127.0.0.1
     port: 5000
 
 # 玩家配置
 players:
-    - name: Alan
+    - name: Kimi-k2-0905
       human: false
-      model:
-          provider: deepseek/deepseek-reasoner
+      model: moonshot/kimi-k2-0905-preview
 
-    - name: Bob
+    - name: Gemini-2.5-flash
       human: false
-      model:
-          provider: deepseek/deepseek-reasoner
+      model: gemini/gemini-2.5-flash
 
-    - name: Churk
+    - name: Kimi-thinking
       human: false
-      model:
-          provider: deepseek/deepseek-reasoner
+      model: moonshot/kimi-thinking-preview
 
-    - name: David
+    - name: Deepseek-v3.1-thinking
       human: false
-      model:
-          provider: deepseek/deepseek-reasoner
+      model: deepseek/deepseek-reasoner
 
-    - name: Eve
+    - name: Deepseek-v3.1
       human: false
-      model:
-          provider: deepseek/deepseek-reasoner
+      model: deepseek/deepseek-chat
 
-    - name: Frank
+    - name: Gemini-2.5-Pro
       human: false
-      model:
-          provider: deepseek/deepseek-reasoner
+      model: gemini/gemini-2.5-pro
